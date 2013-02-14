@@ -4,14 +4,36 @@ import play.api.Play
 import play.api.Play.current
 import java.io.{FileWriter, File}
 import play.api.templates.Html
-import com.ee.utils._
+import com.ee.utils.string._
+import com.ee.utils.file._
 
 object Loader{
-
   
   case class AssetsInfo(urlRoot:String, filePath:String)
 
   lazy val assetsInfo : Option[AssetsInfo] = getAssetsInfo
+
+  case class AssetsLoaderConfig(concatenate:Boolean, minify: Boolean)
+
+  lazy val config : AssetsLoaderConfig = {
+
+     val modeKey = Play.mode match {
+       case play.api.Mode.Dev => "dev"
+       case play.api.Mode.Test => "test"
+       case play.api.Mode.Prod => "prod"
+     }
+
+     def bool(property:String, default : Boolean = false) : Boolean = {
+       current.configuration
+        .getBoolean("assetsLoader." + modeKey + "." + property)
+        .getOrElse(default)
+     }
+
+     val concatenate : Boolean = bool("concatenate")
+     val minify : Boolean = bool("minify")
+
+     AssetsLoaderConfig(concatenate, minify)
+  }
 
   /** Load in the assets controller info from the routes file
    */
@@ -38,7 +60,7 @@ object Loader{
 
   val AssetLoaderTemplate =
     """<!-- Asset Loader -->
-      |${content}
+      |    ${content}
       |<!-- End -->
     """.stripMargin
 
@@ -52,49 +74,81 @@ object Loader{
 
     println(util.Properties.versionString)
 
+
     val info = assetsInfo.getOrElse(AssetsInfo("/a", "/p"))
+
+    def scriptTag(url:String) : String = interpolate(ScriptTemplate, ("src", url))
 
     def toScript(path:String) : String = {
 
-      val file = Play.getFile( "." + info.filePath + "/" + path.replace(".js", ""))
-      val allFiles: List[File] = recursiveListFiles(file)
-      val allContents = allFiles
-        .filter(f => f.isFile && f.getName.endsWith(".js"))
-        .map(f => readContents(f)).mkString("\n")
+      val file = Play.getFile( "." + info.filePath + "/" + path)
 
-      val outPath = targetFolder + info.filePath + "/" + path
-      println(">> write to: " + outPath )
-      writeToFile( outPath, allContents)
-      string.interpolate(ScriptTemplate, ("src", info.urlRoot + "/" + path ))
+      if(file.isDirectory){
+        val allFiles: List[File] = recursiveListFiles(file)
+
+        if(config.concatenate){
+          val newJsFile = concatenate(path, allFiles, info)
+          scriptTag(info.urlRoot + "/" + newJsFile)
+        } else {
+          allFiles.map( f => scriptTag(info.urlRoot + "/" + f.getName)).mkString("\n")
+        }
+
+      } else {
+        scriptTag(info.urlRoot + "/" + path)
+      }
     }
 
     val scripts = paths.toList.map(toScript)
-    val out = string.interpolate(AssetLoaderTemplate, ("content", scripts.mkString("\n")))
+    val out = interpolate(AssetLoaderTemplate, ("content", scripts.mkString("\n")))
     Html(out)
   }
 
-  def writeToFile(path: String, contents: String): File = {
-    val fw = new FileWriter(path)
-    fw.write(contents)
-    fw.close()
-    new File(path)
-  }
+  private def concatenate( path : String, files:List[File], info : AssetsInfo) = {
 
-  def readContents(f: File): String = {
-    val source = scala.io.Source.fromFile(f)
-    val lines = source.mkString
-    source.close()
-    lines
-  }
+      def concatFiles(files:List[File], destination: String) {
+        import com.ee.js.JavascriptCompiler
 
-  def recursiveListFiles(f: File): List[File] = f match {
-    case doesntExit: File if !f.exists() => List()
-    case file: File if f.isFile => List(file)
-    case directory: File if f.isDirectory => {
-      val files = directory.listFiles.toList
-      files ++ files.filter(_.isDirectory).flatMap(recursiveListFiles)
+        val contents = files 
+          .filter(f => f.isFile && f.getName.endsWith(".js"))
+          .map(f => readContents(f)).mkString("\n")
+
+        val out = if(config.minify) JavascriptCompiler.minify(contents, None) else contents
+
+        println("minified: ")
+        println(out)
+
+        println(">> write to: " + destination)
+        writeToFile( destination, out)
+      }
+
+
+      val filesHash : String = hash(files)
+
+      val newJsFile = path + "-" + filesHash +".js"
+      val destination = targetFolder + info.filePath + "/" + newJsFile 
+      
+      if( !(new File(destination).exists )){
+        println("creating new file: " + destination)
+        concatFiles(files, destination)
+      } 
+      else {
+        println("file already exists: " + destination)
+      }
+      newJsFile
     }
-    case _ => List()
+
+
+  /** Create a hash from the file list so we can uid it against other files
+   */
+  private def hash(files: List[File]) : String = {
+
+    val timestamps : String = files
+      .sortWith((a:File,b:File) => a.getName < b.getName)
+      .map( f => f.getAbsolutePath() + "_" + f.lastModified())
+      .mkString("__")
+
+    timestamps.hashCode().toString
   }
+
 
 }
