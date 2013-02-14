@@ -1,1 +1,0 @@
-alert("one_two");
