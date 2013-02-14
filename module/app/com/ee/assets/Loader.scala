@@ -23,10 +23,13 @@ object Loader{
        case play.api.Mode.Prod => "prod"
      }
 
+     println("mode: " + modeKey)
+
      def bool(property:String, default : Boolean = false) : Boolean = {
-       current.configuration
+      val maybeBoolean = current.configuration
         .getBoolean("assetsLoader." + modeKey + "." + property)
-        .getOrElse(default)
+      println("property: " + property + ": " + maybeBoolean)
+      maybeBoolean.getOrElse(default)
      }
 
      val concatenate : Boolean = bool("concatenate")
@@ -69,6 +72,7 @@ object Loader{
 
   def scripts( paths : String*) : play.api.templates.Html = {
 
+    println("config: " + config)
     println("assetsInfo")
     println(assetsInfo)
 
@@ -86,11 +90,18 @@ object Loader{
       if(file.isDirectory){
         val allFiles: List[File] = recursiveListFiles(file)
 
+        println(allFiles)
+
         if(config.concatenate){
           val newJsFile = concatenate(path, allFiles, info)
           scriptTag(info.urlRoot + "/" + newJsFile)
         } else {
-          allFiles.map( f => scriptTag(info.urlRoot + "/" + f.getName)).mkString("\n")
+
+          allFiles.filter(isJs).map{ f : File => 
+            val rootPath : String = file.getAbsolutePath.replace(path, "")
+            val filePath = f.getAbsolutePath.replace(rootPath, "") 
+            scriptTag(info.urlRoot + "/" + filePath)
+            }.mkString("\n")
         }
 
       } else {
@@ -103,19 +114,18 @@ object Loader{
     Html(out)
   }
 
+  private def isJs(f:File) : Boolean = f.isFile && f.getName.endsWith(".js")
+
   private def concatenate( path : String, files:List[File], info : AssetsInfo) = {
 
       def concatFiles(files:List[File], destination: String) {
         import com.ee.js.JavascriptCompiler
 
         val contents = files 
-          .filter(f => f.isFile && f.getName.endsWith(".js"))
+          .filter(isJs)
           .map(f => readContents(f)).mkString("\n")
 
         val out = if(config.minify) JavascriptCompiler.minify(contents, None) else contents
-
-        println("minified: ")
-        println(out)
 
         println(">> write to: " + destination)
         writeToFile( destination, out)

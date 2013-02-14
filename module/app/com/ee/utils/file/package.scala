@@ -9,7 +9,8 @@ package object file {
     val fw = new FileWriter(path)
     fw.write(contents)
     fw.close()
-    new File(path)
+    val newFile = new File(path)
+    if(newFile.exists) new File(path) else throw new RuntimeException("Couldn't write the file to: " + path)
   }
 
   def readContents(f: File): String = {
@@ -20,7 +21,7 @@ package object file {
   }
 
   def recursiveListFiles(f: File): List[File] = f match {
-    case doesntExit: File if !f.exists() => List()
+    case doesntExist: File if !f.exists() => List()
     case file: File if f.isFile => List(file)
     case directory: File if f.isDirectory => {
       val files = directory.listFiles.toList
