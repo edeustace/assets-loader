@@ -23,7 +23,7 @@ object Loader{
        case play.api.Mode.Prod => "prod"
      }
 
-     println("mode: " + modeKey)
+     println("!! > mode: " + modeKey)
 
      def bool(property:String, default : Boolean = false) : Boolean = {
       val maybeBoolean = current.configuration
@@ -41,7 +41,9 @@ object Loader{
   /** Load in the assets controller info from the routes file
    */
   def getAssetsInfo : Option[AssetsInfo] = {
-    val Regex = """.*GET.*?(/.*)/\*file[\s|\t]*controllers.Assets.at\(path="(.*?)",.*\)""".r
+    Some(AssetsInfo("/assets", "/public"))
+
+    /*val Regex = """.*GET.*?(/.*)/\*file[\s|\t]*com.ee.assets.controllers.LoaderAssets.at\(path="(.*?)",.*\)""".r
     val routes = Play.getFile("conf/routes") 
     val contents : List[String] = readContents(routes).split("\n").toList
     contents.find( _.contains("controllers.Assets.at")) match {
@@ -51,7 +53,7 @@ object Loader{
         Some(AssetsInfo(urlRoot, filePath))
       }
       case None => None
-    }
+    }*/
   }
 
   lazy val targetFolder : String = {
@@ -72,21 +74,20 @@ object Loader{
 
   def scripts( paths : String*) : play.api.templates.Html = {
 
+    println("Loader.scripts")
     println("config: " + config)
-    println("assetsInfo")
-    println(assetsInfo)
-
     println(util.Properties.versionString)
 
-
-    val info = assetsInfo.getOrElse(AssetsInfo("/a", "/p"))
+    val info = assetsInfo.getOrElse(throw new RuntimeException("can't find AssetsInfo"))
 
     def scriptTag(url:String) : String = interpolate(ScriptTemplate, ("src", url))
 
     def toScript(path:String) : String = {
 
-      val file = Play.getFile( "." + info.filePath + "/" + path)
+      println("to script: " + path)
 
+      val file = Play.getFile( info.filePath + "/" + path)
+      println("file: " + file.getAbsolutePath + " exists: " + file.exists)
       if(file.isDirectory){
         val allFiles: List[File] = recursiveListFiles(file)
 
@@ -105,7 +106,12 @@ object Loader{
         }
 
       } else {
-        scriptTag(info.urlRoot + "/" + path)
+        if(path.endsWith(".js")){
+            scriptTag(info.urlRoot + "/" + path)
+
+        } else {
+          "<!-- can't find file: " + path + " -->"
+        }
       }
     }
 
@@ -142,7 +148,7 @@ object Loader{
         concatFiles(files, destination)
       } 
       else {
-        println("file already exists: " + destination)
+        println("file already exists: " + new File(destination).getAbsolutePath)
       }
       newJsFile
     }
