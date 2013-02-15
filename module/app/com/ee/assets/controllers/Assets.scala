@@ -15,6 +15,9 @@ import org.joda.time.DateTimeZone
 import collection.JavaConverters._
 
 /**
+ * Copy of the Play 2.0.4 Assets controller with added mechanism to look up files
+ * through the file system aswell as through the classLoader.
+ *
  * Controller that serves static resources.
  *
  * Resources are searched in the classpath.
@@ -65,7 +68,6 @@ object Assets extends Controller {
       case _: Exception => None
     }
 
-
     val resourceName = Option(path + "/" + file).map(name => if (name.startsWith("/")) name else ("/" + name)).get
 
     /** Search for resource using Play.resource and fallback to file
@@ -74,15 +76,12 @@ object Assets extends Controller {
 
       def fileResource : Option[java.net.URL] = {
         val p = if(resourceName.startsWith("/")) resourceName.substring(1,resourceName.length) else resourceName
-        val target : File = new File("target")
-        target.listFiles.toList.find(_.getName.startsWith("scala-")) match {
-          case Some(scalaFolder) => {
-            val path = List(target.getName, scalaFolder.getName, "classes", p).mkString("/")
-            val file : File =  new File(path)
-            if(file.exists) Some(file.toURI.toURL) else None
-          }
-          case _ => None
-        }
+        val classes = com.ee.utils.play.classesFolder
+        val scala = classes.getParentFile
+        val target = scala.getParentFile
+        val path = List(target.getName, scala.getName, classes.getName, p).mkString("/")
+        val file : File =  new File(path)
+        if(file.exists) Some(file.toURI.toURL) else None
       }
 
       Play.resource(resourceName) match {
@@ -90,6 +89,8 @@ object Assets extends Controller {
         case _ => fileResource
       }
     }
+
+
     if (new File(resourceName).isDirectory || !new File(resourceName).getCanonicalPath.startsWith(new File(path).getCanonicalPath)) {
       NotFound
     } else {

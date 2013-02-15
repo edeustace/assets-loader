@@ -30,4 +30,18 @@ package object file {
     case _ => List()
   }
 
+  def suffix(f:File) : String = if(f.getName.contains(".")){
+    f.getName.split("\\.").last
+  }
+  else {
+    f.getName
+  }
+
+  def basename(f:File) : String = if(f.getName.contains(".")){
+    f.getName.split("\\.").dropRight(1).mkString(".")
+  }
+  else {
+    f.getName
+  }
+
 }
