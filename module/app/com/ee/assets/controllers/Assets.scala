@@ -138,8 +138,10 @@ object Assets extends Controller {
                   resourceData
                 )
 
+                def gzip : Boolean = file.contains(".gz.")
+
                 // Is Gzipped?
-                val gzippedResponse = if (isGzipped) {
+                val gzippedResponse = if (gzip) {
                   response.withHeaders(CONTENT_ENCODING -> "gzip")
                 } else {
                   response
