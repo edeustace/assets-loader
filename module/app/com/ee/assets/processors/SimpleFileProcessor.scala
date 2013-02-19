@@ -144,6 +144,7 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
     com.ee.utils.gzip.gzip(contents, destination)
   }
 
+  //TODO: should be using getCanonicalPath here
   private def tidyFolders(s: String): String = s.replace("/./", "/").replace("//", "/")
 
   private def isJs(f: File): Boolean = {
