@@ -5,7 +5,7 @@ import PlayProject._
 object ApplicationBuild extends Build {
 
     val appName         = "assets-loader"
-    val appVersion      = "0.3-SNAPSHOT"
+    val appVersion      = "0.4-SNAPSHOT"
 
     val appDependencies = Seq(
 

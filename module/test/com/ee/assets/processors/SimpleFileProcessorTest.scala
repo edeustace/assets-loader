@@ -29,7 +29,7 @@ class SimpleFileProcessorTest extends Specification {
       }
       }.length === 0
     }
-
+    
     "work" in {
       val root = "test/mockFiles/com/ee/assets/processors"
       val assetInfo = new AssetsInfo("/webpath", root + "/testOne")
@@ -43,7 +43,6 @@ class SimpleFileProcessorTest extends Specification {
 
        assertSrc(xml, "/webpath/files_one/one.js", "/webpath/files_one/one/one_one.js")
     }
-
     "concat" in {
       val root = "test/mockFiles/com/ee/assets/processors"
       val assetInfo = new AssetsInfo("/webpath", root + "/testTwo")
@@ -61,8 +60,8 @@ class SimpleFileProcessorTest extends Specification {
       val out_two = processor.process("files_one")
       out_two === out
 
-      assertSrc(xml, "/webpath/" + generatedFile.getName )
       generatedFile.delete
+      assertSrc(xml, "/webpath/" + generatedFile.getName )
     }
 
     "minify" in {
@@ -83,9 +82,9 @@ class SimpleFileProcessorTest extends Specification {
           (n \ "@src").text.contains("min.js")
       }.length === 0
 
-      assertSrc(xml, "/webpath/files_one/one.min.js", "/webpath/files_one/one/one_one.min.js" )
+     assertSrc(xml, "/webpath/files_one/one.min.js", "/webpath/files_one/one/one_one.min.js" )
     }
-
+    
 
     "gzip" in {
       val root = "test/mockFiles/com/ee/assets/processors"
@@ -102,7 +101,7 @@ class SimpleFileProcessorTest extends Specification {
       (xml \\ "script").length === 2
       assertSrc(xml, "/webpath/files_one/one.gz.js", "/webpath/files_one/one/one_one.gz.js" )
     }
-
+    
 
   }
 }

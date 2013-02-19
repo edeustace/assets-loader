@@ -1,6 +1,7 @@
 package com.ee.js
 
-import com.google.javascript.jscomp.{ Compiler, CompilerOptions, JSSourceFile, CompilationLevel }
+import com.google.javascript.jscomp.{ JSError, Compiler, CompilerOptions, JSSourceFile, CompilationLevel }
+import java.io.File
 
 object JavascriptCompiler {
 
@@ -16,10 +17,21 @@ object JavascriptCompiler {
     compiler.compile(extern, input, options).success match {
       case true => compiler.toSource()
       case false => {
-        val error = compiler.getErrors().head
-        com.ee.utils.file.writeToFile("all_error.js", source)
-        throw new RuntimeException( error.description )
+        val errorFolder = dumpJsAndErrors(source, compiler.getErrors)
+        throw new RuntimeException("JS Errors see: " + errorFolder)
       }
     }
+  }
+
+  private def dumpJsAndErrors(source:String, errors : Array[JSError]) : String = {
+    val errorFolderName = ".Assets-Loader--JavascriptCompiler"
+    val errorString = errors.map{ e  => 
+      "[" + e.lineNumber + "]" + e.description
+    }.mkString("\n")
+    val errorFolder : File = new File(errorFolderName)
+    errorFolder.mkdir()
+    com.ee.utils.file.writeToFile( errorFolderName + "/errors.log", errorString)
+    com.ee.utils.file.writeToFile( errorFolderName + "/all_errors.js", source)
+    errorFolder.getAbsolutePath
   }
 }

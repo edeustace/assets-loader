@@ -53,10 +53,8 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
 
       val processed = files.filter(isJs).map {
         f: File =>
-          val absolutePath = tidyFolders(f.getAbsolutePath)
-          val relativePath = absolutePath.replace(destinationRoot, "").replace(f.getName, "")
           val processedName = nameFile(f)
-          val destination = targetFolder + info.filePath + "/" + relativePath + "/" + processedName
+          val destination = f.getAbsolutePath.replace(f.getName, processedName)
 
           if (!(new File(destination).exists)) {
             process(f, destination)
@@ -65,7 +63,7 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
       }
       Some(processed)
     }
-
+  
     val file = Play.getFile(info.filePath + "/" + path)
 
     def processFileList(files: List[File]): String = {
@@ -82,23 +80,10 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
         files =>
           files.filter(_.getName.endsWith(".js")).map {
             f: File =>
-              //TODO: tidy this up
-
-              println("targetFolder: " + targetFolder)
-              println("path: " + path)
-              println("info.filePath: " + info.filePath)
-              println("file: " + file.getAbsolutePath)
-              println("this file: " + f.getAbsolutePath)
-              println("webPath: " + info.webPath)
-
               val splitPoint = tidyFolders(targetFolder + info.filePath)
-              println("splitPoint: " + splitPoint)
               val thisFilePath = tidyFolders(f.getAbsolutePath)
               val split = thisFilePath.split(splitPoint)
-              println("split: " + split.toList.toString)
-
               val localPath = tidyFolders( info.webPath + "/" + split.last)
-
               val tidyPath = tidyFolders(path)
               val tidyFile = tidyFolders(file.getAbsolutePath)
               val rootPath: String = tidyFolders(tidyFile.replace(tidyPath, ""))
@@ -110,7 +95,19 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
     }
 
     val fileList: List[File] = recursiveListFiles(file)
-    processFileList(fileList)
+    
+    /** point files to the compiled destination not the source folder
+    */
+    def pointToDestination(f:File) : File = {
+      val srcPath = if(info.filePath.startsWith("/")) new File("." + info.filePath) else new File(info.filePath)
+      val absolutePath = tidyFolders(f.getAbsolutePath)
+      val relativePath = absolutePath.replace( tidyFolders(srcPath.getAbsolutePath), "")
+      val destination = targetFolder + info.filePath + "/" + relativePath   
+      new File(destination)
+    }
+
+    val fileListInDestination = fileList.filter(isJs).map(pointToDestination)
+    processFileList(fileListInDestination)
   }
 
   private def concatFiles(files: List[File], destination: String) {
@@ -121,20 +118,17 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
       .map(f => readContents(f)).mkString("\n")
 
     val out = if (config.minify) JavascriptCompiler.minify(contents, None) else contents
-    println(">> write to: " + destination)
     writeToFile(destination, out)
   }
 
   private def minifyFile(file: File, destination: String) {
     val contents = readContents(file)
     val out = JavascriptCompiler.minify(contents, None)
-    println("minifyFile: " + destination)
     writeToFile(destination, out)
   }
 
   private def gzipFile(file: File, destination: String) {
     val contents = readContents(file)
-    println("gzipping: " + destination)
     com.ee.utils.gzip.gzip(contents, destination)
   }
 

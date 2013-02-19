@@ -9,6 +9,7 @@ import com.ee.utils.file._
 import com.ee.assets.models._
 import com.ee.assets.processors._
 
+
 object Loader{
 
 
@@ -21,8 +22,6 @@ object Loader{
      case play.api.Mode.Test => "test"
      case play.api.Mode.Prod => "prod"
     }
-
-    println("!! > mode: " + modeKey)
 
     def bool(property:String, default : Boolean = false) : Boolean = {
       val maybeBoolean = current.configuration.getBoolean("assetsLoader." + modeKey + "." + property)
@@ -50,7 +49,6 @@ object Loader{
 
   def scripts(paths : String*) : play.api.templates.Html = {
     println("Loader.scripts")
-    println(util.Properties.versionString)
     val scripts = paths.toList.map(processor.process)
     val out = interpolate(AssetLoaderTemplate, ("content", scripts.mkString("\n")))
     Html(out)
