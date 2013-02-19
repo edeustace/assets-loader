@@ -95,12 +95,19 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
     }
 
     val fileList: List[File] = recursiveListFiles(file)
+
+    /*fileList.foreach{ f : File => 
+      if(!f.isDirectory) {
+        println("file: " + f.getCanonicalPath)
+        println("content: " + readContents(f))
+      }
+    }*/
     
     /** point files to the compiled destination not the source folder
     */
     def pointToDestination(f:File) : File = {
       val srcPath = if(info.filePath.startsWith("/")) new File("." + info.filePath) else new File(info.filePath)
-      val absolutePath = tidyFolders(f.getAbsolutePath)
+      val absolutePath = f.getCanonicalPath
       val relativePath = absolutePath.replace( tidyFolders(srcPath.getAbsolutePath), "")
       val destination = targetFolder + info.filePath + "/" + relativePath   
       new File(destination)
@@ -111,24 +118,29 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
   }
 
   private def concatFiles(files: List[File], destination: String) {
-    import com.ee.js.JavascriptCompiler
-
     val contents = files
       .filter(isJs)
       .map(f => readContents(f)).mkString("\n")
 
-    val out = if (config.minify) JavascriptCompiler.minify(contents, None) else contents
-    writeToFile(destination, out)
+    //println("files: " + files)
+    //println("canon files: " + files.map(_.getCanonicalPath) )
+    println("concat and save to: " + destination)
+    //println("concat: " + contents)
+    writeToFile(destination, contents)
   }
 
   private def minifyFile(file: File, destination: String) {
     val contents = readContents(file)
     val out = JavascriptCompiler.minify(contents, None)
+    println("minify and save to: " + destination)
+    //println("minify: " + out)
     writeToFile(destination, out)
   }
 
   private def gzipFile(file: File, destination: String) {
     val contents = readContents(file)
+    println("gzip and save to: " + destination)
+    //println("gzip: " + contents)
     com.ee.utils.gzip.gzip(contents, destination)
   }
 

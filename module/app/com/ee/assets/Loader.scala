@@ -25,7 +25,7 @@ object Loader{
 
     def bool(property:String, default : Boolean = false) : Boolean = {
       val maybeBoolean = current.configuration.getBoolean("assetsLoader." + modeKey + "." + property)
-      println("property: " + property + ": " + maybeBoolean)
+      println(property + ": " + maybeBoolean)
       maybeBoolean.getOrElse(default)
     }
 

@@ -23,6 +23,19 @@ object ApplicationBuild extends Build {
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
       resolvers += "scala-tools" at "http://scala-tools.org/repo-releases/",
-      resolvers += "scala-tools-snapshots" at "http://scala-tools.org/repo-snapshots/"
-    )
+      resolvers += "scala-tools-snapshots" at "http://scala-tools.org/repo-snapshots/",
+      organization := "com.ee",
+      scalaVersion := "2.9.1",
+      publishMavenStyle := true,
+      publishTo <<= version { (v: String) =>
+        def isSnapshot = v.trim.endsWith("SNAPSHOT") 
+        val finalPath = (if (isSnapshot) "/snapshots" else "/releases")
+        Some(
+          Resolver.sftp(
+            "Ed Eustace",
+            "edeustace.com", 
+            "/home/edeustace/edeustace.com/public/repository" + finalPath ))
+       }
+       )
+     
 }

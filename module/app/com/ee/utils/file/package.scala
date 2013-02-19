@@ -14,10 +14,19 @@ package object file {
   }
 
   def readContents(f: File): String = {
-    val source = scala.io.Source.fromFile(f)
-    val lines = source.mkString
-    source.close()
-    lines
+
+    if( f.exists ){
+      val source = scala.io.Source.fromFile(f)
+      val lines = source.mkString
+      //println("utils.file.readContents: found file: " + f.getName)
+      //println(lines)
+      source.close()
+      lines
+    }
+    else {
+      //println("utils.file.readContents: file doesn't exist: " + f.getName)
+      ""
+    }
   }
 
   def recursiveListFiles(f: File): List[File] = f match {
