@@ -34,7 +34,7 @@ object Loader{
 
   lazy val targetFolder : String = {
     val Regex = """.*(target/.*?/classes).*""".r
-    val Regex(path) = com.ee.utils.play.classesFolder.getAbsolutePath()
+    val Regex(path) = com.ee.utils.play.classesFolder().getAbsolutePath
     path + "/"
   }
 
@@ -42,15 +42,23 @@ object Loader{
   
   val AssetLoaderTemplate =
     """<!-- Asset Loader -->
+      |    <!--
+      |    files: ${files}
+      |    -->
       |    ${content}
       |<!-- End -->
     """.stripMargin
 
 
   def scripts(paths : String*) : play.api.templates.Html = {
-    println("Loader.scripts")
-    val scripts = paths.toList.map(processor.process)
-    val out = interpolate(AssetLoaderTemplate, ("content", scripts.mkString("\n")))
+    val pathsAsFiles : List[File] = paths.map( p => new File("." + Info.filePath + "/" + p)).toList
+    val allFiles = distinctFiles( pathsAsFiles : _* )
+    val allJsFiles = typeFilter(".js", allFiles)
+    val scripts = processor.process(allJsFiles)
+    val out = interpolate(AssetLoaderTemplate,
+      "content" -> scripts.mkString("\n"),
+      "files" -> allJsFiles.map(_.getName).mkString(","))
+
     Html(out)
   }
 }

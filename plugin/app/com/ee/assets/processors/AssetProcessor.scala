@@ -1,12 +1,11 @@
-package com.ee.assets
+package com.ee.assets.processors
 
-import com.ee.assets.models._
+import java.io.File
 
 trait AssetProcessor {
-  /**
-   * Store the javascript somewhere
-   * @return the url/path to the stored file
+
+  /** Process the list of js files according to the asset loading properties
    */
-  def process(path:String) : String 
-  
+  def process(jsFiles : List[File]) : List[String]
+
 }
