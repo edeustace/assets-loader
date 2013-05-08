@@ -2,19 +2,25 @@ package com.ee.assets.processors
 
 import org.specs2.mutable.Specification
 import java.io.File
-import scala.xml.{XML, Node, Elem}
+import scala.xml.{Node, Elem}
 
 import com.ee.assets.models._
 import org.specs2.matcher.{MatchSuccess, MatchResult}
+import org.specs2.specification.{Fragments, Step}
 
-class SimpleFileProcessorTest extends Specification {
+class SimpleFileProcessorTest extends MockTargetFolder {
+
+  def targetRoot: String = "test/mock-target"
+
+  def targetFolder: String = "test/mock-target/test/public/com/ee/assets"
+
+  def contentsPath: String = "test/public/com/ee/assets/processors"
 
   helpers.PlaySingleton.start
 
-  "File Processor" should {
+  "Simple File Processor" should {
 
-
-    def assertSrc(xml: Elem, sources: String*) : MatchResult[Any] = {
+    def assertSrc(xml: Elem, sources: String*): MatchResult[Any] = {
       println("assertSrc")
       println(xml)
       val lengthAssertion = (xml \\ "script").length === sources.length
@@ -23,85 +29,115 @@ class SimpleFileProcessorTest extends Specification {
           (t._1 \ "@src").text === sources(t._2)
       }
 
-      (assertions :+ lengthAssertion).filterNot{ r =>  r match {
-        case MatchSuccess(_,_,_) => true
-        case _ => false
+      (assertions :+ lengthAssertion).filterNot {
+        r => r match {
+          case MatchSuccess(_, _, _) => true
+          case _ => false
+        }
+      }.length === 0
+    }
+
+    def path(s: String*) = s.mkString("/")
+
+    "when working with a folder and a path" in {
+
+      import com.ee.utils.file
+      val relativeRoot = "com/ee/assets/processors/testFileAndFolder"
+      val assetsPath = "test/public"
+      val assetsFilePath = path(assetsPath, relativeRoot)
+      val assetInfo = new AssetsInfo("/webpath", assetsPath)
+      val names = List("folder_one", "root_one.js")
+      val rawFiles = names.map(path(assetsFilePath, _)).map(new File(_))
+      val files = file.distinctFiles(rawFiles: _*)
+      val hash = file.hash(files)
+
+      def assertConfig(c: AssetsLoaderConfig, expectedFiles: String*): org.specs2.execute.Result = {
+        val processor = new SimpleFileProcessor(assetInfo, c, "test/mock-target")
+        val out = processor.process(files)
+        println(out)
+        val xml = scala.xml.XML.loadString("<head>" + out.mkString("\n") + "</head>")
+        (xml \\ "script").length === expectedFiles.length
+        assertSrc(xml, expectedFiles: _*)
       }
-      }.length === 0
+
+      "work" in {
+        assertConfig(
+          AssetsLoaderConfig(false, false, false),
+          "/webpath/" + relativeRoot + "/folder_one/one.js",
+          "/webpath/" + relativeRoot + "/root_one.js"
+        )
+      }
+
+      "concat" in {
+        assertConfig(
+          AssetsLoaderConfig(concatenate = true, false, false),
+          "/webpath/" + hash + ".js")
+      }
+
+      "minify - but don't concat" in {
+        assertConfig(
+          AssetsLoaderConfig(concatenate = false, minify = true, gzip = false),
+          "/webpath/" + relativeRoot + "/folder_one/one.min.js",
+          "/webpath/" + relativeRoot + "/root_one.min.js"
+        )
+      }
+
+      "gzip - but don't concat" in {
+        assertConfig(
+          AssetsLoaderConfig(concatenate = false, minify = false, gzip = true),
+          "/webpath/" + relativeRoot + "/folder_one/one.gz.js",
+          "/webpath/" + relativeRoot + "/root_one.gz.js"
+        )
+      }
+
+      "minify + gzip - but don't concat" in {
+        assertConfig(
+          AssetsLoaderConfig(concatenate = false, minify = true, gzip = true),
+          "/webpath/" + relativeRoot + "/folder_one/one.min.gz.js",
+          "/webpath/" + relativeRoot + "/root_one.min.gz.js"
+        )
+      }
+
+      "minify" in {
+        assertConfig(
+          AssetsLoaderConfig(concatenate = true, minify = true, false),
+          "/webpath/" + hash + ".min.js")
+      }
+
+      "gzip" in {
+        assertConfig(
+          AssetsLoaderConfig(concatenate = true, minify = true, gzip = true),
+          "/webpath/" + hash + ".min.gz.js")
+      }
     }
-    
-    "work" in {
-      val root = "test/mockFiles/com/ee/assets/processors"
-      val assetInfo = new AssetsInfo("/webpath", root + "/testOne")
-      val config = AssetsLoaderConfig(false, false, false)
-      val processor = new SimpleFileProcessor(assetInfo, config, "")
+  }
 
-      val out = processor.process("files_one")
-      println(out)
-      val xml = scala.xml.XML.loadString("<head>" + out + "</head>")
-      (xml \\ "script").length === 2
+}
 
-       assertSrc(xml, "/webpath/files_one/one.js", "/webpath/files_one/one/one_one.js")
-    }
-    "concat" in {
-      val root = "test/mockFiles/com/ee/assets/processors"
-      val assetInfo = new AssetsInfo("/webpath", root + "/testTwo")
-      val config = AssetsLoaderConfig(true, false, false)
-      val processor = new SimpleFileProcessor(assetInfo, config, "")
+trait MockTargetFolder extends Specification {
 
-      val out = processor.process("files_one")
-      val xml = scala.xml.XML.loadString("<head>" + out + "</head>")
-      (xml \\ "script").length === 1
+  import scala.sys.process._
 
-      val generatedFile = new File(root + "/testTwo").listFiles
-        .toList
-        .find(_.getName.endsWith(".js")).get
-      println("found generated file: " + generatedFile.getName)
-      val out_two = processor.process("files_one")
-      out_two === out
+  def targetRoot : String
+  def targetFolder: String
 
-      generatedFile.delete
-      assertSrc(xml, "/webpath/" + generatedFile.getName )
-    }
+  def contentsPath: String
 
-    "minify" in {
-      val root = "test/mockFiles/com/ee/assets/processors"
-      val assetInfo = new AssetsInfo("/webpath", root + "/testThree")
-      val config = AssetsLoaderConfig(false, true, false)
-      val processor = new SimpleFileProcessor(assetInfo, config, "")
-      val out = processor.process("files_one")
+  override def map(fs: => Fragments) = Step(before) ^ fs ^ Step(after)
 
-      println("minify out: " + out)
-      val files = com.ee.utils.file.recursiveListFiles(new File(root + "/testThree"))
-      files.filter(_.getName.endsWith("min.js")).map(_.delete)
+  def before {
+    //Note - using the full syntax here so we don't conflict with specs2
+    println("copying over to test target dir..")
+    val mkdir: String = "mkdir -p " + targetFolder
+    stringToProcess(mkdir).run()
+    val cpR: String = "cp -r " + contentsPath + " " + targetFolder
+    stringToProcess(cpR).run()
+  }
 
-      val xml = scala.xml.XML.loadString("<head>" + out + "</head>")
-      (xml \\ "script").length === 2
-      (xml \\ "script").filterNot {
-        n: Node =>
-          (n \ "@src").text.contains("min.js")
-      }.length === 0
-
-     assertSrc(xml, "/webpath/files_one/one.min.js", "/webpath/files_one/one/one_one.min.js" )
-    }
-    
-
-    "gzip" in {
-      val root = "test/mockFiles/com/ee/assets/processors"
-      val assetInfo = new AssetsInfo("/webpath", root + "/testFour")
-      val config = AssetsLoaderConfig(false, false, true)
-      val processor = new SimpleFileProcessor(assetInfo, config, "")
-      val out = processor.process("files_one")
-
-      println("received: " + out)
-      val files = com.ee.utils.file.recursiveListFiles(new File(root + "/testFour"))
-      files.filter(_.getName.endsWith("gz.js")).map(_.delete)
-
-      val xml = scala.xml.XML.loadString("<head>" + out + "</head>")
-      (xml \\ "script").length === 2
-      assertSrc(xml, "/webpath/files_one/one.gz.js", "/webpath/files_one/one/one_one.gz.js" )
-    }
-    
-
+  def after {
+    println("removing target dir.")
+    val rm = "rm -fr " + targetRoot
+    stringToProcess(rm).run()
   }
 }
+
