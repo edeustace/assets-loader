@@ -7,10 +7,10 @@ It does 2 things:
 * Allows you to point to a directory of js files to load them all
 * Processes the files depending on the configuration you provide
 
-# Supported Versions
+## Supported Versions
 Play 2.0.4/Scala 2.9.1
 
-# Example
+## Example
 
 Say you have the following folder structure:
 
@@ -44,9 +44,9 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
       <script type="text/javascript" src="/assets/javascripts/my-app/controllers-23423423.min.gz.js"/>
     </head>
 
-# Installing
+## Installing
 
-## Add the Asset Loader as a dependency to your build:
+#### Add the Asset Loader as a dependency to your build:
 
       val assetsLoader = "com.ee" %% "assets-loader" % "0.6-SNAPSHOT"
 
@@ -59,7 +59,7 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
       )
 
 
-## Add a configuration for the Loader (either in the main conf or in a separate file that is included)
+#### Add a configuration for the Loader (either in the main conf or in a separate file that is included)
 
     assetsLoader: {
       dev : {
@@ -80,10 +80,10 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
       }
     }
 
-## Use the Asset Loader Assets Controller
+#### Use the Asset Loader Assets Controller
 The default Assets controller in Play doesn't work with the loader because it only does a look up on the classLoader, the provided controller also looks up using the file system.
 
     GET     /assets/*file               com.ee.assets.controllers.Assets.at(path="/public", file)
 
-# Developing
+### Developing
 Clone the project and run `play`.
