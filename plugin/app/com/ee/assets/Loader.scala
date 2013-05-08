@@ -43,7 +43,8 @@ object Loader{
   val AssetLoaderTemplate =
     """<!-- Asset Loader -->
       |    <!--
-      |    files: ${files}
+      |    files:
+      |    ${files}
       |    -->
       |    ${content}
       |<!-- End -->
@@ -51,14 +52,18 @@ object Loader{
 
 
   def scripts(paths : String*) : play.api.templates.Html = {
-    val pathsAsFiles : List[File] = paths.map( p => new File("." + Info.filePath + "/" + p)).toList
-    val allFiles = distinctFiles( pathsAsFiles : _* )
-    val allJsFiles = typeFilter(".js", allFiles)
-    val scripts = processor.process(allJsFiles)
-    val out = interpolate(AssetLoaderTemplate,
-      "content" -> scripts.mkString("\n"),
-      "files" -> allJsFiles.map(_.getName).mkString(","))
 
-    Html(out)
+    if(paths.length == 0){
+      Html("<!-- AssetLoader :: error : no paths to load -->")
+    } else {
+      val pathsAsFiles : List[File] = paths.map( p => new File("." + Info.filePath + "/" + p)).toList
+      val allFiles = distinctFiles( pathsAsFiles : _* )
+      val allJsFiles = typeFilter(".js", allFiles)
+      val scripts = processor.process(allJsFiles)
+      val out = interpolate(AssetLoaderTemplate,
+        "content" -> scripts.mkString("\n"),
+        "files" -> allJsFiles.map(_.getName).mkString("\n\t"))
+      Html(out)
+    }
   }
 }

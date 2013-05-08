@@ -2,7 +2,7 @@ package com.ee.assets.processors
 
 import com.ee.assets.models.AssetsLoaderConfig
 import com.ee.assets.models.AssetsInfo
-import play.api.Logger
+import com.ee.log.Logger
 import java.io.File
 import com.ee.utils.string._
 import com.ee.utils.file._

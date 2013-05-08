@@ -1,6 +1,6 @@
 package com.ee.utils
 
-import _root_.play.api.Logger
+import _root_.com.ee.log.Logger
 import java.io.File
 import java.io.FileWriter
 
