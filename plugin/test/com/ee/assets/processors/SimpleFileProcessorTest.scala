@@ -53,7 +53,7 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
       def assertConfig(c: AssetsLoaderConfig, expectedFiles: String*): org.specs2.execute.Result = {
         val processor = new SimpleFileProcessor(assetInfo, c, "test/mock-target")
-        val out = processor.process(files)
+        val out = processor.process("test",files)
         println(out)
         val xml = scala.xml.XML.loadString("<head>" + out.mkString("\n") + "</head>")
         (xml \\ "script").length === expectedFiles.length
@@ -71,7 +71,7 @@ class SimpleFileProcessorTest extends MockTargetFolder {
       "concat" in {
         assertConfig(
           AssetsLoaderConfig(concatenate = true, false, false),
-          "/webpath/" + hash + ".js")
+          "/webpath/test-" + hash + ".js")
       }
 
       "minify - but don't concat" in {
@@ -101,13 +101,13 @@ class SimpleFileProcessorTest extends MockTargetFolder {
       "minify" in {
         assertConfig(
           AssetsLoaderConfig(concatenate = true, minify = true, false),
-          "/webpath/" + hash + ".min.js")
+          "/webpath/test-" + hash + ".min.js")
       }
 
       "gzip" in {
         assertConfig(
           AssetsLoaderConfig(concatenate = true, minify = true, gzip = true),
-          "/webpath/" + hash + ".min.gz.js")
+          "/webpath/test-" + hash + ".min.gz.js")
       }
     }
   }

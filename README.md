@@ -85,5 +85,7 @@ The default Assets controller in Play doesn't work with the loader because it on
 
     GET     /assets/*file               com.ee.assets.controllers.Assets.at(path="/public", file)
 
+#### Logging
+If you want to see logs from asset loader - make sure you add a logger for 'assets-loader' to your log config.
 ### Developing
 Clone the project and run `play`.

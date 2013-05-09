@@ -13,7 +13,7 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
   val ScriptTemplate = """<script type="text/javascript" src="${src}"></script>"""
 
   type Hash = String
-
+  type ConcatenatedName = String
 
   /** Process the js files
     * @param jsFiles - these files are in the static config folder as defined AssetsInfo.filePath
@@ -22,11 +22,11 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
     *                Note: The first thing we do is point to the equivalent files in the target folder.
     *                All processing will happen against these files in target.
     */
-  def process(jsFiles: List[File]): List[String] = {
+  def process(prefix : String, jsFiles: List[File]): List[String] = {
     def onlyJs: Boolean = jsFiles.filterNot(nameAndSuffix(_)._2 == "js").length == 0
     require(onlyJs, "all files must be .js files")
 
-    implicit val h: Hash = hash(jsFiles)
+    implicit val concatenatedName : ConcatenatedName = prefix + "-" + hash(jsFiles) + ".js"
 
     val filesInTargetFolder = jsFiles.map(toFileInTargetFolder)
     processFileList(info.filePath, filesInTargetFolder)
@@ -50,7 +50,7 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
     targetFile
   }
 
-  private def processFileList(path: String, files: List[File])(implicit hash: Hash): List[String] = {
+  private def processFileList(path: String, files: List[File])(implicit concatenatedName: ConcatenatedName): List[String] = {
 
     val processed: Option[List[File]] = for {
       concatenated <- concat(path, files)
@@ -86,10 +86,9 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
   }
 
 
-  private def concat(path: String, files: List[File])(implicit hash: Hash): Option[List[File]] = if (config.concatenate) {
+  private def concat(path: String, files: List[File])(implicit concatenatedName: ConcatenatedName ): Option[List[File]] = if (config.concatenate) {
 
-    val newJsFile = hash + ".js"
-    val destination = makePath(targetFolder, info.filePath, newJsFile)
+    val destination = makePath(targetFolder, info.filePath, concatenatedName)
 
     Logger.debug("[concat] -> destination: " + destination)
 
