@@ -31,9 +31,9 @@ object Loader {
       val pathsAsFiles: List[File] = paths.map(p => new File("." + Info.filePath + "/" + p)).toList
       val allFiles = distinctFiles(pathsAsFiles: _*)
       val typedFiles = typeFilter(processor.suffix, allFiles)
-      val scripts = processor.process(concatPrefix, typedFiles)
+      val assets = processor.process(concatPrefix, typedFiles)
       val out = interpolate(AssetLoaderTemplate,
-        "content" -> scripts.mkString("\n"),
+        "content" -> assets.mkString("\n"),
         "files" -> typedFiles.map(_.getName).mkString("\n\t"))
       Html(out)
     }
