@@ -7,7 +7,7 @@ object Build extends sbt.Build {
     import Dependencies._
 
     val appName         = "assets-loader"
-    val appVersion      = "0.6-SNAPSHOT"
+    val appVersion      = "0.7"
     val ScalaVersion = "2.9.1"
 
     val main = PlayProject(appName, appVersion, provided(closureCompiler), mainLang = SCALA).settings(
