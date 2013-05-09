@@ -1,10 +1,10 @@
 # assets-loader
 
-A play plugin that provides a way of rendering assets depending on your environment.
+A play plugin that concatenates, minifies and gzips your JS or Css.
 
 It does 2 things:
 
-* Allows you to point to a directory of js files to load them all
+* Allows you to point to a directory of js or css files to load them all
 * Processes the files depending on the configuration you provide
 
 ## Supported Versions
