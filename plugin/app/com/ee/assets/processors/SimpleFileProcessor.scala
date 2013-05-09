@@ -12,7 +12,7 @@ class SimpleFileProcessor(
                            config: AssetsLoaderConfig,
                            targetFolder: String,
                            srcTemplate: String,
-                           suffix: String,
+                           val suffix: String,
                            minify: (File, String) => Unit) extends AssetProcessor {
 
 

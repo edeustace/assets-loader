@@ -9,4 +9,5 @@ trait AssetProcessor {
    */
   def process(concatenatedPrefix:String,jsFiles : List[File]) : List[String]
 
+  def suffix : String
 }

@@ -20,40 +20,27 @@ object Loader {
   private val jsProcessor: AssetProcessor = new SimpleFileProcessor(Info, Config, targetFolder, ScriptTemplate, ".js", minifyJs)
   private val cssProcessor: AssetProcessor = new SimpleFileProcessor(Info, Config, targetFolder, CssTemplate, ".css", minifyCss)
 
-  def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = {
+  def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = run(jsProcessor, concatPrefix)(paths: _*)
 
+  def css(concatPrefix: String)(paths: String*): play.api.templates.Html = run(cssProcessor, concatPrefix)(paths: _*)
+
+  private def run(processor: AssetProcessor, concatPrefix: String)(paths: String*): play.api.templates.Html = {
     if (paths.length == 0) {
       Html("<!-- AssetLoader :: error : no paths to load -->")
     } else {
       val pathsAsFiles: List[File] = paths.map(p => new File("." + Info.filePath + "/" + p)).toList
       val allFiles = distinctFiles(pathsAsFiles: _*)
-      val allJsFiles = typeFilter(".js", allFiles)
-      val scripts = jsProcessor.process(concatPrefix, allJsFiles)
+      val typedFiles = typeFilter(processor.suffix, allFiles)
+      val scripts = processor.process(concatPrefix, typedFiles)
       val out = interpolate(AssetLoaderTemplate,
         "content" -> scripts.mkString("\n"),
-        "files" -> allJsFiles.map(_.getName).mkString("\n\t"))
-      Html(out)
-    }
-  }
-
-  def css(concatPrefix: String)(paths: String*): play.api.templates.Html = {
-
-    if (paths.length == 0) {
-      Html("<!-- AssetLoader :: error : no paths to load -->")
-    } else {
-      val pathsAsFiles: List[File] = paths.map(p => new File("." + Info.filePath + "/" + p)).toList
-      val allFiles = distinctFiles(pathsAsFiles: _*)
-      val allCssFiles = typeFilter(".css", allFiles)
-      val scripts = cssProcessor.process(concatPrefix, allCssFiles)
-      val out = interpolate(AssetLoaderTemplate,
-        "content" -> scripts.mkString("\n"),
-        "files" -> allCssFiles.map(_.getName).mkString("\n\t"))
+        "files" -> typedFiles.map(_.getName).mkString("\n\t"))
       Html(out)
     }
   }
 
   def minifyCss(file: File, destination: String) {
-    Logger.debug("[minifyFile]  " + file + " destination: " + destination)
+    Logger.debug("[minifyCss]  " + file + " destination: " + destination)
     val contents = readContents(file)
     val compressor = new com.yahoo.platform.yui.compressor.CssCompressor(new StringReader(contents))
     val writer = new StringWriter()
@@ -62,7 +49,7 @@ object Loader {
   }
 
   def minifyJs(file: File, destination: String) {
-    Logger.debug("[minifyFile]  " + file + " destination: " + destination)
+    Logger.debug("[minifyJs]  " + file + " destination: " + destination)
     val contents = readContents(file)
     val out = JavascriptCompiler.minify(contents, None)
     writeToFile(destination, out)
