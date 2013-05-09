@@ -59,7 +59,9 @@ object Assets extends Controller {
   def at(path: String, file: String): Action[AnyContent] = Action { request =>
     // -- LastModified handling
 
-      
+    com.ee.log.Logger.debug("Assets.at: " + path + ", " + file)
+
+
     def parseDate(date: String): Option[java.util.Date] = try {
       //jodatime does not parse timezones, so we handle that manually
       val d = dfp.parseDateTime(date.replace(parsableTimezoneCode,"")).toDate
