@@ -2,19 +2,25 @@ package com.ee.assets
 
 import play.api.Play
 import play.api.Play.current
-import java.io.{FileWriter, File}
+import java.io.{StringWriter, StringReader, File}
 import play.api.templates.Html
 import com.ee.utils.string._
 import com.ee.utils.file._
 import com.ee.assets.models._
 import com.ee.assets.processors._
+import com.ee.log.Logger
+import com.ee.js.JavascriptCompiler
 
 
 object Loader {
 
-  private val processor: AssetProcessor = new SimpleFileProcessor(Info, Config, targetFolder)
+  val ScriptTemplate = """<script type="text/javascript" src="${src}"></script>"""
+  val CssTemplate = """<link rel="stylesheet" type="text/css" href="${src}"/>"""
 
-  def scripts(concatPrefix:String)(paths: String*): play.api.templates.Html = {
+  private val jsProcessor: AssetProcessor = new SimpleFileProcessor(Info, Config, targetFolder, ScriptTemplate, ".js", minifyJs)
+  private val cssProcessor: AssetProcessor = new SimpleFileProcessor(Info, Config, targetFolder, CssTemplate, ".css", minifyCss)
+
+  def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = {
 
     if (paths.length == 0) {
       Html("<!-- AssetLoader :: error : no paths to load -->")
@@ -22,12 +28,44 @@ object Loader {
       val pathsAsFiles: List[File] = paths.map(p => new File("." + Info.filePath + "/" + p)).toList
       val allFiles = distinctFiles(pathsAsFiles: _*)
       val allJsFiles = typeFilter(".js", allFiles)
-      val scripts = processor.process(concatPrefix,allJsFiles)
+      val scripts = jsProcessor.process(concatPrefix, allJsFiles)
       val out = interpolate(AssetLoaderTemplate,
         "content" -> scripts.mkString("\n"),
         "files" -> allJsFiles.map(_.getName).mkString("\n\t"))
       Html(out)
     }
+  }
+
+  def css(concatPrefix: String)(paths: String*): play.api.templates.Html = {
+
+    if (paths.length == 0) {
+      Html("<!-- AssetLoader :: error : no paths to load -->")
+    } else {
+      val pathsAsFiles: List[File] = paths.map(p => new File("." + Info.filePath + "/" + p)).toList
+      val allFiles = distinctFiles(pathsAsFiles: _*)
+      val allCssFiles = typeFilter(".css", allFiles)
+      val scripts = cssProcessor.process(concatPrefix, allCssFiles)
+      val out = interpolate(AssetLoaderTemplate,
+        "content" -> scripts.mkString("\n"),
+        "files" -> allCssFiles.map(_.getName).mkString("\n\t"))
+      Html(out)
+    }
+  }
+
+  def minifyCss(file: File, destination: String) {
+    Logger.debug("[minifyFile]  " + file + " destination: " + destination)
+    val contents = readContents(file)
+    val compressor = new com.yahoo.platform.yui.compressor.CssCompressor(new StringReader(contents))
+    val writer = new StringWriter()
+    compressor.compress(writer, 0)
+    writeToFile(destination, writer.toString)
+  }
+
+  def minifyJs(file: File, destination: String) {
+    Logger.debug("[minifyFile]  " + file + " destination: " + destination)
+    val contents = readContents(file)
+    val out = JavascriptCompiler.minify(contents, None)
+    writeToFile(destination, out)
   }
 
   private lazy val Info: AssetsInfo = AssetsInfo("/assets", "/public")

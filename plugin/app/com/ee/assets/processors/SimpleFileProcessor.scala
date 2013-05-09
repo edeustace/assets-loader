@@ -6,29 +6,32 @@ import com.ee.log.Logger
 import java.io.File
 import com.ee.utils.string._
 import com.ee.utils.file._
-import com.ee.js.JavascriptCompiler
 
-class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFolder: String) extends AssetProcessor {
+class SimpleFileProcessor(
+                           info: AssetsInfo,
+                           config: AssetsLoaderConfig,
+                           targetFolder: String,
+                           srcTemplate: String,
+                           suffix: String,
+                           minify: (File, String) => Unit) extends AssetProcessor {
 
-  val ScriptTemplate = """<script type="text/javascript" src="${src}"></script>"""
 
-  type Hash = String
   type ConcatenatedName = String
 
-  /** Process the js files
-    * @param jsFiles - these files are in the static config folder as defined AssetsInfo.filePath
+  /** Process the files
+    * @param files - these files are in the static config folder as defined AssetsInfo.filePath
     *                Typically this is the '/public' folder in the app.
     *
     *                Note: The first thing we do is point to the equivalent files in the target folder.
     *                All processing will happen against these files in target.
     */
-  def process(prefix : String, jsFiles: List[File]): List[String] = {
-    def onlyJs: Boolean = jsFiles.filterNot(nameAndSuffix(_)._2 == "js").length == 0
-    require(onlyJs, "all files must be .js files")
+  def process(prefix: String, files: List[File]): List[String] = {
+    def onlyRightType: Boolean = files.filterNot( "." + nameAndSuffix(_)._2 == suffix).length == 0
+    require(onlyRightType, "all files must be "+ suffix +" files")
 
-    implicit val concatenatedName : ConcatenatedName = prefix + "-" + hash(jsFiles) + ".js"
+    implicit val concatenatedName: ConcatenatedName = prefix + "-" + hash(files) + suffix
 
-    val filesInTargetFolder = jsFiles.map(toFileInTargetFolder)
+    val filesInTargetFolder = files.map(toFileInTargetFolder)
     processFileList(info.filePath, filesInTargetFolder)
   }
 
@@ -86,7 +89,7 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
   }
 
 
-  private def concat(path: String, files: List[File])(implicit concatenatedName: ConcatenatedName ): Option[List[File]] = if (config.concatenate) {
+  private def concat(path: String, files: List[File])(implicit concatenatedName: ConcatenatedName): Option[List[File]] = if (config.concatenate) {
 
     val destination = makePath(targetFolder, info.filePath, concatenatedName)
 
@@ -104,13 +107,13 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
   }
 
   private def minify(files: List[File]): Option[List[File]] = if (config.minify) {
-    processFilesInList(files, f => com.ee.utils.file.nameAndSuffix(f)._1 + ".min.js", minifyFile)
+    processFilesInList(files, f => com.ee.utils.file.nameAndSuffix(f)._1 + ".min" + suffix, minify)
   } else {
     Some(files)
   }
 
   private def gzip(files: List[File]): Option[List[File]] = if (config.gzip) {
-    processFilesInList(files, f => com.ee.utils.file.nameAndSuffix(f)._1 + ".gz.js", gzipFile)
+    processFilesInList(files, f => com.ee.utils.file.nameAndSuffix(f)._1 + ".gz" + suffix, gzipFile)
   } else {
     Some(files)
   }
@@ -140,12 +143,6 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
     writeToFile(destination, contents)
   }
 
-  private def minifyFile(file: File, destination: String) {
-    Logger.debug("[minifyFile]  " + file + " destination: " + destination)
-    val contents = readContents(file)
-    val out = JavascriptCompiler.minify(contents, None)
-    writeToFile(destination, out)
-  }
 
   private def gzipFile(file: File, destination: String) {
     Logger.debug("[gzipFile] " + file + " destination: " + destination)
@@ -155,7 +152,7 @@ class SimpleFileProcessor(info: AssetsInfo, config: AssetsLoaderConfig, targetFo
 
   private def __/|/(s: String): String = s.replace("/./", "/").replace("//", "/")
 
-  private def scriptTag(url: String): String = interpolate(ScriptTemplate, ("src", url))
+  private def scriptTag(url: String): String = interpolate(srcTemplate, ("src", url))
 
   private def trim_/(raw: String): String = if (raw.startsWith("/")) raw.substring(1, raw.length) else raw
 

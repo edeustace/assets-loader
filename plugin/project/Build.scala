@@ -10,7 +10,7 @@ object Build extends sbt.Build {
     val appVersion      = "0.8-SNAPSHOT"
     val ScalaVersion = "2.9.1"
 
-    val main = PlayProject(appName, appVersion, provided(closureCompiler), mainLang = SCALA).settings(
+    val main = PlayProject(appName, appVersion, provided(closureCompiler) ++ Seq(yuiCompressor), mainLang = SCALA).settings(
       resolvers ++= commonResolvers,
       organization := "com.ee",
       scalaVersion := ScalaVersion,

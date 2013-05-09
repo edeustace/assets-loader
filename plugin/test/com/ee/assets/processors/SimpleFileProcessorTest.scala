@@ -7,6 +7,7 @@ import scala.xml.{Node, Elem}
 import com.ee.assets.models._
 import org.specs2.matcher.{MatchSuccess, MatchResult}
 import org.specs2.specification.{Fragments, Step}
+import com.ee.assets.Loader
 
 class SimpleFileProcessorTest extends MockTargetFolder {
 
@@ -52,7 +53,7 @@ class SimpleFileProcessorTest extends MockTargetFolder {
       val hash = file.hash(files)
 
       def assertConfig(c: AssetsLoaderConfig, expectedFiles: String*): org.specs2.execute.Result = {
-        val processor = new SimpleFileProcessor(assetInfo, c, "test/mock-target")
+        val processor = new SimpleFileProcessor(assetInfo, c, "test/mock-target", Loader.ScriptTemplate, ".js", Loader.minifyJs)
         val out = processor.process("test",files)
         println(out)
         val xml = scala.xml.XML.loadString("<head>" + out.mkString("\n") + "</head>")

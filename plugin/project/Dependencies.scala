@@ -15,6 +15,7 @@ object Dependencies{
               .exclude("com.googlecode.jarjar", "jarjar")
               .exclude("junit", "junit")
 
+  val yuiCompressor = "com.yahoo.platform.yui" % "yuicompressor" % "2.4.7"
 
   val scalaTools =  "scala-tools" at "http://scala-tools.org/repo-releases/"
   val scalaToolsSnapshots =  "scala-tools-snapshots" at "http://scala-tools.org/repo-snapshots/"
