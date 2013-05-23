@@ -16,6 +16,7 @@ package object file {
 
   def readContents(f: File): String = {
 
+    Logger.debug("file.readContents: " + f.getName)
     if (f.exists) {
       val source = scala.io.Source.fromFile(f)
       val lines = source.mkString

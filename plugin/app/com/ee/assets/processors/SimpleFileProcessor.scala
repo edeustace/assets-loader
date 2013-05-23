@@ -6,6 +6,7 @@ import com.ee.log.Logger
 import java.io.File
 import com.ee.utils.string._
 import com.ee.utils.file._
+import com.ee.assets.exceptions.AssetsLoaderException
 
 class SimpleFileProcessor(
                            info: AssetsInfo,
@@ -20,14 +21,14 @@ class SimpleFileProcessor(
 
   /** Process the files
     * @param files - these files are in the static config folder as defined AssetsInfo.filePath
-    *                Typically this is the '/public' folder in the app.
+    *              Typically this is the '/public' folder in the app.
     *
-    *                Note: The first thing we do is point to the equivalent files in the target folder.
-    *                All processing will happen against these files in target.
+    *              Note: The first thing we do is point to the equivalent files in the target folder.
+    *              All processing will happen against these files in target.
     */
   def process(prefix: String, files: List[File]): List[String] = {
-    def onlyRightType: Boolean = files.filterNot( "." + nameAndSuffix(_)._2 == suffix).length == 0
-    require(onlyRightType, "all files must be "+ suffix +" files")
+    def onlyRightType: Boolean = files.filterNot("." + nameAndSuffix(_)._2 == suffix).length == 0
+    require(onlyRightType, "all files must be " + suffix + " files")
 
     implicit val concatenatedName: ConcatenatedName = prefix + "-" + hash(files) + suffix
 
@@ -137,10 +138,18 @@ class SimpleFileProcessor(
 
 
   private def concatFiles(files: List[File], destination: String) {
-    val contents = files.map(f => readContents(f)).mkString("\n")
-    Logger.debug("[concatFiles] destination: " + destination)
-    Logger.debug("[concatFiles] files: " + files)
-    writeToFile(destination, contents)
+    try {
+      Logger.debug("[concatFiles] destination: " + destination)
+      Logger.debug("[concatFiles] files: " + files)
+      val contents = files.map(f => readContents(f)).mkString("\n")
+      writeToFile(destination, contents)
+    } catch {
+      case e: Throwable => {
+        val fileNames = files.map(_.getName).mkString
+        Logger.error("An exception occurred concatenating: " + fileNames)
+        throw new AssetsLoaderException("concatFiles: " + fileNames, e)
+      }
+    }
   }
 
 
