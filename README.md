@@ -15,6 +15,12 @@ There is another branch called 211_version that has support for Play 2.1.2.
 
 It is in beta - but will become the master branch once I've had a chance to use it in a real application.
 
+To use it in Play 2.1.2 add: 
+
+    "com.ee" %% "assets-loader" % "0.10-SNAPSHOT"
+
+To your dependencies
+
 
 ## Example
 
