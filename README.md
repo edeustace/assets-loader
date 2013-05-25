@@ -8,8 +8,9 @@ It does 2 things:
 * Processes the files depending on the configuration you provide
 
 ## Supported Versions
-Play 2.0.4/Scala 2.9.1
 Play 2.1.2/Scala 2.10.1
+
+* Play 2.0.4/Scala 2.9.1 - use version 0.8*
 
 
 ### Running the examples
@@ -69,7 +70,7 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.6-SNAPSHOT"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.10-SNAPSHOT"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"
