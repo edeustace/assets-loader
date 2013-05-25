@@ -10,7 +10,7 @@ It does 2 things:
 ## Supported Versions
 Play 2.1.2/Scala 2.10.1
 
-* Play 2.0.4/Scala 2.9.1 - use version 0.8*
+* Play 2.0.4/Scala 2.9.1 - use version 0.8
 
 
 ### Running the examples
