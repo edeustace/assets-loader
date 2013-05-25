@@ -9,8 +9,29 @@ It does 2 things:
 
 ## Supported Versions
 Play 2.0.4/Scala 2.9.1
+Play 2.1.2/Scala 2.10.1
 
-## Example
+
+### Running the examples
+
+The example is configured as a Play 2.1.2 application by default.
+
+To run the 2.0.4 example:
+
+    cd example
+    ./create-example-2.0.4
+    cd example-play-app
+    play run
+
+To restore the 2.1.2 application:
+
+    cd example
+    ./create-example-2.1.2
+    cd example-play-app
+    play run
+
+
+## Description
 
 Say you have the following folder structure:
 

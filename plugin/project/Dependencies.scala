@@ -5,9 +5,8 @@ import Keys._
 object Dependencies{
 
   //The closure compiler that play uses - we expect this to be provided by the play app.
-  val closureCompiler = ("com.google.javascript"            %    "closure-compiler"         %   "rr2079.1" notTransitive())
+  val closureCompiler = ("com.google.javascript" % "closure-compiler" % "rr2079.1" )
               .exclude("args4j", "args4j")
-              .exclude("com.google.guava", "guava")
               .exclude("org.json", "json")
               .exclude("com.google.protobuf", "protobuf-java")
               .exclude("org.apache.ant", "ant")
