@@ -10,6 +10,12 @@ It does 2 things:
 ## Supported Versions
 Play 2.0.4/Scala 2.9.1
 
+### Support for Play 2.1.2/Scala 2.10
+There is another branch called 211_version that has support for Play 2.1.2.
+
+It is in beta - but will become the master branch once I've had a chance to use it in a real application.
+
+
 ## Example
 
 Say you have the following folder structure:
