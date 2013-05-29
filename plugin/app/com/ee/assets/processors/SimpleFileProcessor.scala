@@ -4,8 +4,8 @@ import com.ee.assets.models.AssetsLoaderConfig
 import com.ee.assets.models.AssetsInfo
 import com.ee.log.Logger
 import java.io.File
+import com.ee.utils.file.{nameAndSuffix, readContents, writeToFile}
 import com.ee.utils.string._
-import com.ee.utils.file._
 import com.ee.assets.exceptions.AssetsLoaderException
 
 class SimpleFileProcessor(
@@ -14,7 +14,8 @@ class SimpleFileProcessor(
                            targetFolder: String,
                            srcTemplate: String,
                            val suffix: String,
-                           minify: (File, String) => Unit) extends AssetProcessor {
+                           minify: (File, String) => Unit,
+                           hash: List[File] => String) extends AssetProcessor {
 
 
   type ConcatenatedName = String
@@ -31,7 +32,7 @@ class SimpleFileProcessor(
     require(onlyRightType, "all files must be " + suffix + " files")
 
     implicit val concatenatedName: ConcatenatedName = prefix + "-" + hash(files) + suffix
-
+    Logger.debug("Concatentated name: " + concatenatedName)
     val filesInTargetFolder = files.map(toFileInTargetFolder)
     processFileList(info.filePath, filesInTargetFolder)
   }

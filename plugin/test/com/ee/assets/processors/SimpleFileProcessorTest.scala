@@ -53,7 +53,8 @@ class SimpleFileProcessorTest extends MockTargetFolder {
       val hash = file.hash(files)
 
       def assertConfig(c: AssetsLoaderConfig, expectedFiles: String*): org.specs2.execute.Result = {
-        val processor = new SimpleFileProcessor(assetInfo, c, "test/mock-target", Loader.ScriptTemplate, ".js", Loader.minifyJs)
+        import com.ee.utils.file.{hash => hashFn, fileToString}
+        val processor = new SimpleFileProcessor(assetInfo, c, "test/mock-target", Loader.ScriptTemplate, ".js", Loader.minifyJs, hashFn(_, fileToString))
         val out = processor.process("test",files)
         println(out)
         val xml = scala.xml.XML.loadString("<head>" + out.mkString("\n") + "</head>")

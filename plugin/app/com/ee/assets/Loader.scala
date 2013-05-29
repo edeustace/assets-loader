@@ -17,8 +17,11 @@ object Loader {
   val ScriptTemplate = """<script type="text/javascript" src="${src}"></script>"""
   val CssTemplate = """<link rel="stylesheet" type="text/css" href="${src}"/>"""
 
-  private val jsProcessor: AssetProcessor = new SimpleFileProcessor(Info, Config, targetFolder, ScriptTemplate, ".js", minifyJs)
-  private val cssProcessor: AssetProcessor = new SimpleFileProcessor(Info, Config, targetFolder, CssTemplate, ".css", minifyCss)
+  private val jsProcessor: AssetProcessor =
+    new SimpleFileProcessor(Info, Config, targetFolder, ScriptTemplate, ".js", minifyJs, loaderHash)
+
+  private val cssProcessor: AssetProcessor =
+    new SimpleFileProcessor(Info, Config, targetFolder, CssTemplate, ".css", minifyCss, loaderHash)
 
   def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = run(jsProcessor, concatPrefix)(paths: _*)
 
@@ -53,6 +56,22 @@ object Loader {
     val contents = readContents(file)
     val out = JavascriptCompiler.minify(contents, None)
     writeToFile(destination, out)
+  }
+
+  /** Use only the name for hashing on production as the file will not change */
+  private def loaderHash(files:List[File]) : String = {
+    import com.ee.utils.file._
+
+    val fileToStringFn : (File => String)= Play.mode match{
+      case play.api.Mode.Prod => {
+        (f : File )=> {
+          Logger.debug("return simple file name for Production mode")
+          f.getName
+        }
+      }
+      case _ => (f : File )=> f.getName + "_" + f.lastModified
+    }
+    hash(files, fileToStringFn)
   }
 
   private lazy val Info: AssetsInfo = AssetsInfo("/assets", "/public")
