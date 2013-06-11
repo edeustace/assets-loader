@@ -1,12 +1,13 @@
 package com.ee.assets.processors
 
-import com.ee.assets.models.AssetsLoaderConfig
+import com.ee.assets.deployment.Deployer
+import com.ee.assets.exceptions.AssetsLoaderException
 import com.ee.assets.models.AssetsInfo
+import com.ee.assets.models.AssetsLoaderConfig
 import com.ee.log.Logger
-import java.io.File
 import com.ee.utils.file.{nameAndSuffix, readContents, writeToFile}
 import com.ee.utils.string._
-import com.ee.assets.exceptions.AssetsLoaderException
+import java.io.File
 
 class SimpleFileProcessor(
                            info: AssetsInfo,
@@ -15,7 +16,8 @@ class SimpleFileProcessor(
                            srcTemplate: String,
                            val suffix: String,
                            minify: (File, String) => Unit,
-                           hash: List[File] => String) extends AssetProcessor {
+                           hash: List[File] => String,
+                           deployer: Option[Deployer]) extends AssetProcessor {
 
 
   type ConcatenatedName = String
@@ -65,16 +67,32 @@ class SimpleFileProcessor(
       gzipped
     }
 
+
     processed.map {
       files =>
         files.map {
           f: File =>
+
             Logger.debug("[processFileList] ->")
             val relative = relativePath(f, target)
-            Logger.debug("relative: " + relative)
-            val withWebPath = __/|/(relative.replace(info.filePath, info.webPath))
-            Logger.debug("web path: " + withWebPath)
-            scriptTag(withWebPath)
+
+            def pointToLocalFile: String = {
+              Logger.debug("relative: " + relative)
+              val withWebPath = __/|/(relative.replace(info.filePath, info.webPath))
+              Logger.debug("web path: " + withWebPath)
+              scriptTag(withWebPath)
+            }
+
+            def deployFile(d: Deployer): String = {
+              val trimmed = __/|/(relative.replace(info.filePath, ""))
+              Logger.debug("calling deploy with: " + trimmed)
+              d.deploy(trimmed, f.lastModified(), readContents(f)) match {
+                case Right(path) => scriptTag(path)
+                case Left(error) => throw new AssetsLoaderException("Error deploying: " + error)
+              }
+            }
+
+            deployer.map(deployFile).getOrElse(pointToLocalFile)
         }
     }.getOrElse(List())
   }

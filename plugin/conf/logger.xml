@@ -7,6 +7,7 @@
 
     <logger name="play" level="ERROR" />
     <logger name="application" level="INFO" />
+    <logger name="assets.loader" level="DEBUG" />
 
     <root level="ERROR">
         <appender-ref ref="STDOUT" />
