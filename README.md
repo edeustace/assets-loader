@@ -15,7 +15,7 @@ There is another branch called 211_version that has support for Play 2.1.2.
 
 It is in beta - but will become the master branch once I've had a chance to use it in a real application.
 
-To use it in Play 2.1.2 add: 
+To use it in Play 2.1.2 add:
 
     "com.ee" %% "assets-loader" % "0.10-SNAPSHOT"
 
@@ -101,3 +101,14 @@ The default Assets controller in Play doesn't work with the loader because it on
 If you want to see logs from asset loader - make sure you add a logger for 'assets-loader' to your log config.
 ### Developing
 Clone the project and run `play`.
+
+
+### Release Notes
+
+### 0.9.3
+- Added ability for clients to use the assets processed by Assets Loader for deployment
+-- Added a trait Deployer that clients can implement and then instantiate Loader with this Implementation
+! This is a breaking change - Loader is no longer an object.
+
+### 0.9.2
+- First Version
