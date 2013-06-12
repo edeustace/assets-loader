@@ -1,5 +1,6 @@
 package com.ee.assets.processors
 
+import com.ee.assets.deployment.ContentInfo
 import com.ee.assets.deployment.Deployer
 import com.ee.assets.exceptions.AssetsLoaderException
 import com.ee.assets.models.AssetsInfo
@@ -7,7 +8,11 @@ import com.ee.assets.models.AssetsLoaderConfig
 import com.ee.log.Logger
 import com.ee.utils.file.{nameAndSuffix, readContents, writeToFile}
 import com.ee.utils.string._
-import java.io.File
+import java.io._
+import java.util.zip.GZIPInputStream
+import scala.Left
+import scala.Right
+import scala.Some
 
 class SimpleFileProcessor(
                            info: AssetsInfo,
@@ -67,6 +72,7 @@ class SimpleFileProcessor(
       gzipped
     }
 
+    def contentType = if (suffix == ".js") "text/javascript" else "text/css"
 
     processed.map {
       files =>
@@ -86,7 +92,10 @@ class SimpleFileProcessor(
             def deployFile(d: Deployer): String = {
               val trimmed = __/|/(relative.replace(info.filePath, ""))
               Logger.debug("calling deploy with: " + trimmed)
-              d.deploy(trimmed, f.lastModified(), readContents(f)) match {
+
+              def stream : InputStream = if (config.gzip) bufferedInputStream(f) else byteArrayStream(f)
+
+              d.deploy(trimmed, f.lastModified(), stream, ContentInfo(contentType, if (config.gzip) Some("gzip") else None)) match {
                 case Right(path) => scriptTag(path)
                 case Left(error) => throw new AssetsLoaderException("Error deploying: " + error)
               }
@@ -96,6 +105,11 @@ class SimpleFileProcessor(
         }
     }.getOrElse(List())
   }
+
+  private def bufferedInputStream(file:File): InputStream = new BufferedInputStream(new FileInputStream(file))
+
+  private def byteArrayStream(file:File) : ByteArrayInputStream = new ByteArrayInputStream(readContents(file).getBytes("UTF-8"))
+
 
   private def relativePath(child: File, parent: File): String = {
     val childFullPath = child.getCanonicalPath

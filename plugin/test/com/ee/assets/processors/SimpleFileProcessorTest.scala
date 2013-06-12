@@ -6,7 +6,7 @@ import com.ee.assets.models._
 import java.io.File
 import org.specs2.matcher.{MatchSuccess, MatchResult}
 import org.specs2.mutable.Specification
-import org.specs2.specification.{Fragments, Step}
+import org.specs2.specification.{Scope, Fragments, Step}
 import scala.xml.{Node, Elem}
 
 
@@ -63,80 +63,76 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
   "Simple File Processor" should {
 
-    "when working with a folder and a path" in {
+    val assertNoDeploy = assertConfig(assetInfo, files) _
+    val assertDeploy = assertConfig(assetInfo, files, Some(new NullDeployer)) _
 
-      val assertNoDeploy = assertConfig(assetInfo, files) _
+    def run(leadPath : String, fn : (AssetsLoaderConfig,String* ) => org.specs2.execute.Result) = {
+      "when working with a folder and a path" in {
 
+        "work" in {
+          fn(
+            AssetsLoaderConfig(false, false, false),
+            leadPath + "/" + relativeRoot + "/folder_one/one.js",
+            leadPath + "/" + relativeRoot + "/root_one.js"
+          )
+        }
 
-      "work" in {
-        assertNoDeploy(
-          AssetsLoaderConfig(false, false, false),
-          "/webpath/" + relativeRoot + "/folder_one/one.js",
-          "/webpath/" + relativeRoot + "/root_one.js"
-        )
-      }
+        "concat" in {
+          fn(
+            AssetsLoaderConfig(concatenate = true, false, false),
+            leadPath + "/test-" + hash + ".js")
+        }
 
-      "concat" in {
-        assertNoDeploy(
-          AssetsLoaderConfig(concatenate = true, false, false),
-          "/webpath/test-" + hash + ".js")
-      }
+        "minify - but don't concat" in {
+          fn(
+            AssetsLoaderConfig(concatenate = false, minify = true, gzip = false),
+            leadPath + "/" + relativeRoot + "/folder_one/one.min.js",
+            leadPath + "/" + relativeRoot + "/root_one.min.js"
+          )
+        }
 
-      "minify - but don't concat" in {
-        assertNoDeploy(
-          AssetsLoaderConfig(concatenate = false, minify = true, gzip = false),
-          "/webpath/" + relativeRoot + "/folder_one/one.min.js",
-          "/webpath/" + relativeRoot + "/root_one.min.js"
-        )
-      }
+        "gzip - but don't concat" in {
+          fn(
+            AssetsLoaderConfig(concatenate = false, minify = false, gzip = true),
+            leadPath + "/" + relativeRoot + "/folder_one/one.gz.js",
+            leadPath + "/" + relativeRoot + "/root_one.gz.js"
+          )
+        }
 
-      "gzip - but don't concat" in {
-        assertNoDeploy(
-          AssetsLoaderConfig(concatenate = false, minify = false, gzip = true),
-          "/webpath/" + relativeRoot + "/folder_one/one.gz.js",
-          "/webpath/" + relativeRoot + "/root_one.gz.js"
-        )
-      }
+        "minify + gzip - but don't concat" in {
+          fn(
+            AssetsLoaderConfig(concatenate = false, minify = true, gzip = true),
+            leadPath + "/" + relativeRoot + "/folder_one/one.min.gz.js",
+            leadPath + "/" + relativeRoot + "/root_one.min.gz.js"
+          )
+        }
 
-      "minify + gzip - but don't concat" in {
-        assertNoDeploy(
-          AssetsLoaderConfig(concatenate = false, minify = true, gzip = true),
-          "/webpath/" + relativeRoot + "/folder_one/one.min.gz.js",
-          "/webpath/" + relativeRoot + "/root_one.min.gz.js"
-        )
-      }
+        "minify" in {
+          fn(
+            AssetsLoaderConfig(concatenate = true, minify = true, false),
+            leadPath + "/test-" + hash + ".min.js")
+        }
 
-      "minify" in {
-        assertNoDeploy(
-          AssetsLoaderConfig(concatenate = true, minify = true, false),
-          "/webpath/test-" + hash + ".min.js")
-      }
-
-      "gzip" in {
-        assertNoDeploy(
-          AssetsLoaderConfig(concatenate = true, minify = true, gzip = true),
-          "/webpath/test-" + hash + ".min.gz.js")
+        "gzip" in {
+          fn(
+            AssetsLoaderConfig(concatenate = true, minify = true, gzip = true),
+            leadPath + "/test-" + hash + ".min.gz.js")
+        }
       }
     }
 
-    "when using a deployer" in {
-
-      val assertDeploy = assertConfig(assetInfo, files, Some(new NullDeployer)) _
-
-
-      "work" in {
-        assertDeploy(
-          AssetsLoaderConfig(false, false, false),
-          "/deployed/" + relativeRoot + "/folder_one/one.js",
-          "/deployed/" + relativeRoot + "/root_one.js"
-        )
-      }
-
-
+    "with no deployer" in {
+      run("/webpath", assertNoDeploy)
     }
+    "with a deployer" in {
+      run("/deployed", assertDeploy)
+    }
+
   }
 
 }
+
+
 
 trait MockTargetFolder extends Specification {
 
