@@ -2,15 +2,12 @@
 
 A play plugin that concatenates, minifies and gzips your JS or Css.
 
-It does 2 things:
-
-* Allows you to point to a directory of js or css files to load them all
-* Processes the files depending on the configuration you provide
+It will process the files depending on the configuration you provide
 
 ## Supported Versions
 Play 2.1.2/Scala 2.10.1
 
-* Play 2.0.4/Scala 2.9.1 - use version 0.8
+* Play 2.0.4/Scala 2.9.1 - use version 0.9.3-SNAPSHOT
 
 
 ### Running the examples
@@ -56,9 +53,10 @@ A configuration like so:
 
 You can add these scripts to your template like so:
 
-    <head>
-      @com.ee.assets.Loader("javascripts/my-app/controllers", "javascript/my-app/singleFile.js")
-    </head>
+      val loader = new com.ee.assets.Loader()
+      //Note: you can pass in directories or individual files. If a directory it'll recursively pick the js/css files for you.
+      loader.scripts("name")("javascripts/my-app/controllers", "javascript/my-app/singleFile.js")
+      //loader.css("name")("javascripts/my-app/styles", "css/my-app/file.css")
 
 The loader will concatenate singleFile.js, app.js and helper.js into one file, minify it then gzip it and place it in your target folder and return a script tag so your html will look like this:
 
@@ -66,11 +64,30 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
       <script type="text/javascript" src="/assets/javascripts/my-app/controllers-23423423.min.gz.js"/>
     </head>
 
+### Deployer
+When instantiating the loader you can optionally pass in an implementation of the Deployer trait. This looks like this:
+
+    trait Deployer {
+
+      /** deploy the file to some location
+        * @param filename name of file
+        * @param lastModified the last modified date of the file - useful for supporting caching
+        * @param contents the file contents - called by name
+        * @return the path to the deployed file
+        */
+      def deploy(filename: String,  lastModified: Long, contents: => InputStream, info : ContentInfo): Either[String,String]
+
+    }
+
+    case class ContentInfo(contentType:String, contentEncoding:Option[String] = None)
+
+This allows you to for example deploy your assets to Amazon S3.
+
 ## Installing
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.10-SNAPSHOT"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1-SNAPSHOT"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"

@@ -7,7 +7,7 @@ object Build extends sbt.Build {
     import Dependencies._
 
     val appName         = "assets-loader"
-    val appVersion      = "0.10-SNAPSHOT"
+    val appVersion      = "0.10.1-SNAPSHOT"
     val ScalaVersion = "2.10.1"
 
     //TODO: Use the closure compiler from play sbt plugin
