@@ -51,37 +51,40 @@ A configuration like so:
       gzip: true
     }
 
-You can add these scripts to your template like so:
+You call the loader:
 
       val loader = new com.ee.assets.Loader()
-      //Note: you can pass in directories or individual files. If a directory it'll recursively pick the js/css files for you.
       loader.scripts("name")("javascripts/my-app/controllers", "javascript/my-app/singleFile.js")
-      //loader.css("name")("javascripts/my-app/styles", "css/my-app/file.css")
 
 The loader will concatenate singleFile.js, app.js and helper.js into one file, minify it then gzip it and place it in your target folder and return a script tag so your html will look like this:
 
-    <head>
       <script type="text/javascript" src="/assets/javascripts/my-app/controllers-23423423.min.gz.js"/>
-    </head>
+
+
+### Api
+
+    val loader = new com.ee.assets.Loader()
+    loader.scripts("name")("path_to_scripts_folder_or_file", ...)
+    loader.css("name")("path_to_css_folder_or_file", ...)
+
+Note: The paths argument supports either directories or individual files. If a directory it'll recursively pick the js/css files for you.
 
 ### Deployer
+
 When instantiating the loader you can optionally pass in an implementation of the Deployer trait. This looks like this:
 
     trait Deployer {
-
-      /** deploy the file to some location
-        * @param filename name of file
-        * @param lastModified the last modified date of the file - useful for supporting caching
-        * @param contents the file contents - called by name
-        * @return the path to the deployed file
-        */
       def deploy(filename: String,  lastModified: Long, contents: => InputStream, info : ContentInfo): Either[String,String]
-
     }
 
     case class ContentInfo(contentType:String, contentEncoding:Option[String] = None)
 
-This allows you to for example deploy your assets to Amazon S3.
+This allows you to for example deploy your assets to Amazon S3, then return the deployed path to the Loader which will the return that script path.
+
+    val loader = new com.ee.assets.Loader(Some(S3Deployer))
+    loader.scripts("name")("path_to_scripts_folder_or_file", ...)
+    loader.css("name")("path_to_css_folder_or_file", ...)
+
 
 ## Installing
 
