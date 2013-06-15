@@ -7,7 +7,7 @@ object ApplicationBuild extends Build {
     val appName         = "example-2.0.4"
     val appVersion      = "1.0-SNAPSHOT"
 
-  val assetsLoader = "com.ee" %% "assets-loader" % "0.8-SNAPSHOT"
+  val assetsLoader = "com.ee" %% "assets-loader" % "0.9.3-SNAPSHOT"
   //TODO: How to remove this dependency?
   val closureCompiler = ("com.google.javascript" % "closure-compiler" % "rr2079.1" notTransitive())
     .exclude("args4j", "args4j")

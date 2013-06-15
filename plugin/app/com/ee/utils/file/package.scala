@@ -66,13 +66,15 @@ package object file {
     }
   }
 
+  def fileToString(f: File): String = f.getAbsolutePath + "_" + f.lastModified()
 
   /** Create a hash from the file list using the name and dateModified.
     */
-  def hash(files: List[File]): String = {
+  def hash(files: List[File],
+           fileToString: (File => String) = fileToString): String = {
     val timestamps: String = files
       .sortWith((a: File, b: File) => a.getName < b.getName)
-      .map(f => f.getAbsolutePath + "_" + f.lastModified())
+      .map(fileToString)
       .mkString("__")
     timestamps.hashCode().toString
   }

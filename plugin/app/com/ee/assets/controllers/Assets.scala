@@ -41,13 +41,13 @@ object Assets extends Controller {
   private val timeZoneCode = "GMT"
 
   //Dateformatter is immutable and threadsafe
-  private val df: DateTimeFormatter = 
+  private val df: DateTimeFormatter =
     DateTimeFormat.forPattern("EEE, dd MMM yyyy HH:mm:ss '"+timeZoneCode+"'").withLocale(java.util.Locale.ENGLISH).withZone(DateTimeZone.forID(timeZoneCode))
-  
+
   //Dateformatter is immutable and threadsafe
-  private val dfp: DateTimeFormatter = 
+  private val dfp: DateTimeFormatter =
     DateTimeFormat.forPattern("EEE, dd MMM yyyy HH:mm:ss").withLocale(java.util.Locale.ENGLISH).withZone(DateTimeZone.forID(timeZoneCode))
-  
+
   private val parsableTimezoneCode = " "+timeZoneCode
 
   /**
@@ -114,14 +114,14 @@ object Assets extends Controller {
             try {
               (stream.available, Enumerator.fromStream(stream))
             } catch {
-              case _ => (0, Enumerator[Array[Byte]]())
+              case _ : Throwable => (0, Enumerator[Array[Byte]]())
             }
           }
 
           if(length == 0) {
             NotFound
           } else {
-            request.headers.get(IF_NONE_MATCH).flatMap { ifNoneMatch => 
+            request.headers.get(IF_NONE_MATCH).flatMap { ifNoneMatch =>
               etagFor(url).filter(_ == ifNoneMatch)
             }.map (_ => NotModified).getOrElse {
               request.headers.get(IF_MODIFIED_SINCE).flatMap(parseDate).flatMap { ifModifiedSince =>
@@ -190,7 +190,7 @@ object Assets extends Controller {
                .flatMap(c => Option(c.getJarFile.getJarEntry(fileNameInJar.drop(1))))
                .map(_.getTime)
                .filterNot(_ == 0)
-               .map(lastModified => df.print({new java.util.Date(lastModified)}.getTime)) 
+               .map(lastModified => df.print({new java.util.Date(lastModified)}.getTime))
             }
         }
         case _ => None

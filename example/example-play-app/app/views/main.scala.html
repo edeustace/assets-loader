@@ -5,8 +5,8 @@
 <html>
     <head>
         <title>@title</title>
-        @com.ee.assets.Loader.css("example")( "stylesheets" )
-        @com.ee.assets.Loader.scripts("example")( "javascripts/example" )
+        @views.Helper.loader.css("example")( "stylesheets" )
+        @views.Helper.loader.scripts("example")( "javascripts/example" )
     </head>
     <body>
         @content

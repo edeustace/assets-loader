@@ -1,12 +1,18 @@
 package com.ee.assets.processors
 
-import com.ee.assets.models.AssetsLoaderConfig
-import com.ee.assets.models.AssetsInfo
-import com.ee.log.Logger
-import java.io.File
-import com.ee.utils.string._
-import com.ee.utils.file._
+import com.ee.assets.deployment.ContentInfo
+import com.ee.assets.deployment.Deployer
 import com.ee.assets.exceptions.AssetsLoaderException
+import com.ee.assets.models.AssetsInfo
+import com.ee.assets.models.AssetsLoaderConfig
+import com.ee.log.Logger
+import com.ee.utils.file.{nameAndSuffix, readContents, writeToFile}
+import com.ee.utils.string._
+import java.io._
+import java.util.zip.GZIPInputStream
+import scala.Left
+import scala.Right
+import scala.Some
 
 class SimpleFileProcessor(
                            info: AssetsInfo,
@@ -14,7 +20,9 @@ class SimpleFileProcessor(
                            targetFolder: String,
                            srcTemplate: String,
                            val suffix: String,
-                           minify: (File, String) => Unit) extends AssetProcessor {
+                           minify: (File, String) => Unit,
+                           hash: List[File] => String,
+                           deployer: Option[Deployer]) extends AssetProcessor {
 
 
   type ConcatenatedName = String
@@ -31,7 +39,7 @@ class SimpleFileProcessor(
     require(onlyRightType, "all files must be " + suffix + " files")
 
     implicit val concatenatedName: ConcatenatedName = prefix + "-" + hash(files) + suffix
-
+    Logger.debug("Concatentated name: " + concatenatedName)
     val filesInTargetFolder = files.map(toFileInTargetFolder)
     processFileList(info.filePath, filesInTargetFolder)
   }
@@ -64,19 +72,44 @@ class SimpleFileProcessor(
       gzipped
     }
 
+    def contentType = if (suffix == ".js") "text/javascript" else "text/css"
+
     processed.map {
       files =>
         files.map {
           f: File =>
+
             Logger.debug("[processFileList] ->")
             val relative = relativePath(f, target)
-            Logger.debug("relative: " + relative)
-            val withWebPath = __/|/(relative.replace(info.filePath, info.webPath))
-            Logger.debug("web path: " + withWebPath)
-            scriptTag(withWebPath)
+
+            def pointToLocalFile: String = {
+              Logger.debug("relative: " + relative)
+              val withWebPath = __/|/(relative.replace(info.filePath, info.webPath))
+              Logger.debug("web path: " + withWebPath)
+              scriptTag(withWebPath)
+            }
+
+            def deployFile(d: Deployer): String = {
+              val trimmed = __/|/(relative.replace(info.filePath, ""))
+              Logger.debug("calling deploy with: " + trimmed)
+
+              def stream : InputStream = if (config.gzip) bufferedInputStream(f) else byteArrayStream(f)
+
+              d.deploy(trimmed, f.lastModified(), stream, ContentInfo(contentType, if (config.gzip) Some("gzip") else None)) match {
+                case Right(path) => scriptTag(path)
+                case Left(error) => throw new AssetsLoaderException("Error deploying: " + error)
+              }
+            }
+
+            deployer.map(deployFile).getOrElse(pointToLocalFile)
         }
     }.getOrElse(List())
   }
+
+  private def bufferedInputStream(file:File): InputStream = new BufferedInputStream(new FileInputStream(file))
+
+  private def byteArrayStream(file:File) : ByteArrayInputStream = new ByteArrayInputStream(readContents(file).getBytes("UTF-8"))
+
 
   private def relativePath(child: File, parent: File): String = {
     val childFullPath = child.getCanonicalPath
