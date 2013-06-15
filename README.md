@@ -47,7 +47,7 @@ A configuration like so:
 You can add these scripts to your template like so:
 
     <head>
-      @com.ee.assets.Loader("javascripts/my-app/controllers", "javascript/my-app/singleFile.js")
+      @new com.ee.assets.Loader().scripts("javascripts/my-app/controllers", "javascript/my-app/singleFile.js")
     </head>
 
 The loader will concatenate singleFile.js, app.js and helper.js into one file, minify it then gzip it and place it in your target folder and return a script tag so your html will look like this:
@@ -60,7 +60,7 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.6-SNAPSHOT"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.9.3-SNAPSHOT"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"
