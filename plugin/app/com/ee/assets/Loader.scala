@@ -1,7 +1,7 @@
 package com.ee.assets
 
 import com.ee.assets.deployment.Deployer
-import com.ee.assets.models._
+import com.ee.assets.models.{Suffix, AssetsLoaderConfig, AssetsInfo}
 import com.ee.assets.processors._
 import com.ee.js.JavascriptCompiler
 import com.ee.log.Logger
@@ -88,8 +88,8 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
 
   private lazy val Info: AssetsInfo = AssetsInfo("/assets", "/public")
 
-  private lazy val CssConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration("css", mode.toString.toLowerCase, config)
-  private lazy val JsConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration("js", mode.toString.toLowerCase, config)
+  private lazy val CssConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration( mode.toString.toLowerCase, Suffix.css, config)
+  private lazy val JsConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.js, config)
 
   private lazy val targetFolder: String = {
     val Regex = """.*(target/.*?/classes).*""".r

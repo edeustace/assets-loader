@@ -5,6 +5,11 @@ import play.api.Configuration
 
 package object models {
 
+  private[assets] object Suffix extends Enumeration{
+    type Suffix = Value
+    val js,css = Value
+  }
+
   /**
    * Config for an asset loader
    * @param concatenate
@@ -12,10 +17,10 @@ package object models {
    * @param gzip
    * @param deploy - if false then the deployer will not be invoked
    */
-  case class AssetsLoaderConfig(concatenate: Boolean, minify: Boolean, gzip: Boolean, deploy: Boolean)
+  private[assets] case class AssetsLoaderConfig(concatenate: Boolean, minify: Boolean, gzip: Boolean, deploy: Boolean)
 
   object AssetsLoaderConfig {
-    def fromAppConfiguration(mode: String, suffix: String, configuration: Configuration): AssetsLoaderConfig = {
+    def fromAppConfiguration(mode: String, suffix: Suffix.Suffix, configuration: Configuration): AssetsLoaderConfig = {
 
       Logger.debug("creating config for: %s, %s".format(mode, suffix))
       Logger.debug(configuration.getConfig("assetsLoader").map(_.toString).getOrElse("Can't find config for assetsLoader"))
@@ -23,7 +28,7 @@ package object models {
       val config = for {
         al <- configuration.getConfig("assetsLoader")
         modeConfig <- al.getConfig(mode)
-        suffixConfig <- modeConfig.getConfig(suffix).orElse(Some(modeConfig))
+        suffixConfig <- modeConfig.getConfig(suffix.toString).orElse(Some(modeConfig))
       } yield {
         suffixConfig
       }

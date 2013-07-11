@@ -15,8 +15,8 @@ class AssetsLoaderConfigTest extends Specification{
 
     "build from app configuration - empty config" in {
       val c = "{}"
-      AssetsLoaderConfig.fromAppConfiguration("dev","css", wrap(c)) === AssetsLoaderConfig(false, false, false, false)
-      AssetsLoaderConfig.fromAppConfiguration("dev", "js", wrap(c)) === AssetsLoaderConfig(false, false, false, false)
+      AssetsLoaderConfig.fromAppConfiguration("dev",Suffix.css, wrap(c)) === AssetsLoaderConfig(false, false, false, false)
+      AssetsLoaderConfig.fromAppConfiguration("dev", Suffix.js, wrap(c)) === AssetsLoaderConfig(false, false, false, false)
     }
 
     "build from app configuration - no file specific config" in {
@@ -32,8 +32,8 @@ class AssetsLoaderConfigTest extends Specification{
           |}
         """.stripMargin
 
-      AssetsLoaderConfig.fromAppConfiguration("dev", "css", wrap(c)) === AssetsLoaderConfig(true, true, true, true)
-      AssetsLoaderConfig.fromAppConfiguration("dev", "js", wrap(c)) === AssetsLoaderConfig(true, true, true, true)
+      AssetsLoaderConfig.fromAppConfiguration("dev", Suffix.css, wrap(c)) === AssetsLoaderConfig(true, true, true, true)
+      AssetsLoaderConfig.fromAppConfiguration("dev", Suffix.js, wrap(c)) === AssetsLoaderConfig(true, true, true, true)
     }
 
     "build from app configuration - js only specific config" in {
@@ -50,8 +50,8 @@ class AssetsLoaderConfigTest extends Specification{
           |}
         """.stripMargin
 
-      AssetsLoaderConfig.fromAppConfiguration("dev", "css", wrap(c)) === AssetsLoaderConfig(false, false, false, false)
-      AssetsLoaderConfig.fromAppConfiguration("dev", "js", wrap(c)) === AssetsLoaderConfig(true, true, true, false)
+      AssetsLoaderConfig.fromAppConfiguration("dev", Suffix.css, wrap(c)) === AssetsLoaderConfig(false, false, false, false)
+      AssetsLoaderConfig.fromAppConfiguration("dev", Suffix.js, wrap(c)) === AssetsLoaderConfig(true, true, true, false)
     }
 
     "build from app configuration - js and css specific config" in {
@@ -75,8 +75,8 @@ class AssetsLoaderConfigTest extends Specification{
           |}
         """.stripMargin
 
-      AssetsLoaderConfig.fromAppConfiguration("dev", "css", wrap(c)) === AssetsLoaderConfig(false, true, false, true)
-      AssetsLoaderConfig.fromAppConfiguration("dev", "js", wrap(c)) === AssetsLoaderConfig(true, false, true, false)
+      AssetsLoaderConfig.fromAppConfiguration("dev", Suffix.css, wrap(c)) === AssetsLoaderConfig(false, true, false, true)
+      AssetsLoaderConfig.fromAppConfiguration("dev", Suffix.js, wrap(c)) === AssetsLoaderConfig(true, false, true, false)
     }
   }
 
