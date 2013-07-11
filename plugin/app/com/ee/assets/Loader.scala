@@ -8,8 +8,7 @@ import com.ee.log.Logger
 import com.ee.utils.file._
 import com.ee.utils.string._
 import java.io.{StringWriter, StringReader, File}
-import play.api.Play
-import play.api.Play.current
+import play.api.{Configuration, Mode}
 import play.api.templates.Html
 
 object Loader{
@@ -28,13 +27,13 @@ object Loader{
     """.stripMargin
 }
 
-class Loader(deployer:Option[Deployer] = None) {
+class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Configuration) {
 
   private val jsProcessor: AssetProcessor =
-    new SimpleFileProcessor(Info, Config, targetFolder, Loader.ScriptTemplate, ".js", minifyJs, loaderHash, deployer)
+    new SimpleFileProcessor(Info, JsConfig, targetFolder, Loader.ScriptTemplate, ".js", minifyJs, loaderHash, deployer)
 
   private val cssProcessor: AssetProcessor =
-    new SimpleFileProcessor(Info, Config, targetFolder, Loader.CssTemplate, ".css", minifyCss, loaderHash, deployer)
+    new SimpleFileProcessor(Info, CssConfig, targetFolder, Loader.CssTemplate, ".css", minifyCss, loaderHash, deployer)
 
   def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = run(jsProcessor, concatPrefix)(paths: _*)
 
@@ -75,8 +74,8 @@ class Loader(deployer:Option[Deployer] = None) {
   private def loaderHash(files:List[File]) : String = {
     import com.ee.utils.file._
 
-    val fileToStringFn : (File => String)= Play.mode match{
-      case play.api.Mode.Prod => {
+    val fileToStringFn : (File => String) = mode match{
+      case Mode.Prod => {
         (f : File )=> {
           Logger.debug("return simple file name for Production mode")
           f.getName
@@ -89,23 +88,8 @@ class Loader(deployer:Option[Deployer] = None) {
 
   private lazy val Info: AssetsInfo = AssetsInfo("/assets", "/public")
 
-  //TODO: move mode to constructor param so we can remove dependency on current Application
-  private lazy val Config: AssetsLoaderConfig = {
-
-    val modeKey = Play.mode match {
-      case play.api.Mode.Dev => "dev"
-      case play.api.Mode.Test => "test"
-      case play.api.Mode.Prod => "prod"
-    }
-
-    def bool(property: String, default: Boolean = false): Boolean = {
-      val maybeBoolean = current.configuration.getBoolean("assetsLoader." + modeKey + "." + property)
-      com.ee.log.Logger.debug(property + ": " + maybeBoolean)
-      maybeBoolean.getOrElse(default)
-    }
-
-    AssetsLoaderConfig(bool("concatenate"), bool("minify"), bool("gzip"))
-  }
+  private lazy val CssConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration("css", mode.toString.toLowerCase, config)
+  private lazy val JsConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration("js", mode.toString.toLowerCase, config)
 
   private lazy val targetFolder: String = {
     val Regex = """.*(target/.*?/classes).*""".r

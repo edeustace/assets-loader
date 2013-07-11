@@ -6,8 +6,13 @@ object Build extends sbt.Build {
 
     import Dependencies._
 
-    val appName         = "assets-loader"
-    val appVersion      = "0.9.3-SNAPSHOT"
+    val appName = "assets-loader"
+
+    lazy val appVersion = {
+      val other = Process("git rev-parse --short HEAD").lines.head
+      "0.9.4-" + other
+    }
+
     val ScalaVersion = "2.9.1"
 
     val main = PlayProject(appName, appVersion, provided(closureCompiler) ++ Seq(yuiCompressor), mainLang = SCALA).settings(
