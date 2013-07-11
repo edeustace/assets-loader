@@ -74,12 +74,20 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
 #### Add a configuration for the Loader (either in the main conf or in a separate file that is included)
 
     assetsLoader: {
+      # if within dev/test/prod there is a js/css node - these settings will be used specifically for those files.
       dev : {
-        concatenate:true
-        minify:false
-        gzip:false
+        js : {
+          concatenate:true
+          minify:false
+          gzip:false
+        }
+        css : {
+          concatenate:true
+          minify:false
+          gzip:false
+        }
       }
-
+      # if no js/css node defined - settings apply to both
       test : {
         concatenate: true
         minify: false
@@ -104,6 +112,10 @@ Clone the project and run `play`.
 
 
 ### Release Notes
+
+### 0.9.4
+- Added the option to configure js/css specific settings
+- Added the config property 'deploy' to disable deployment for js/css specifically
 
 ### 0.9.3
 - Added ability for clients to use the assets processed by Assets Loader for deployment
