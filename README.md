@@ -104,12 +104,20 @@ This allows you to for example deploy your assets to Amazon S3, then return the 
 #### Add a configuration for the Loader (either in the main conf or in a separate file that is included)
 
     assetsLoader: {
+      # if within dev/test/prod there is a js/css node - these settings will be used specifically for those files.
       dev : {
-        concatenate:true
-        minify:false
-        gzip:false
+        js : {
+          concatenate:true
+          minify:false
+          gzip:false
+        }
+        css : {
+          concatenate:true
+          minify:false
+          gzip:false
+        }
       }
-
+      # if no js/css node defined - settings apply to both
       test : {
         concatenate: true
         minify: false
@@ -131,3 +139,20 @@ The default Assets controller in Play doesn't work with the loader because it on
 If you want to see logs from asset loader - make sure you add a logger for 'assets-loader' to your log config.
 ### Developing
 Clone the project and run `play`.
+
+
+### Release Notes
+### 0.10-SNAPSHOT
+- Play 2.1.X support
+
+### 0.9.4
+- Added the option to configure js/css specific settings
+- Added the config property 'deploy' to disable deployment for js/css specifically
+
+### 0.9.3
+- Added ability for clients to use the assets processed by Assets Loader for deployment
+-- Added a trait Deployer that clients can implement and then instantiate Loader with this Implementation
+! This is a breaking change - Loader is no longer an object.
+
+### 0.9.2
+- First Version

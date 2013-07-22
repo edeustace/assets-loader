@@ -8,6 +8,7 @@ import org.specs2.matcher.{MatchSuccess, MatchResult}
 import org.specs2.mutable.Specification
 import org.specs2.specification.{Scope, Fragments, Step}
 import scala.xml.{Node, Elem}
+import play.api.{Mode, Configuration}
 
 
 class SimpleFileProcessorTest extends MockTargetFolder {
@@ -20,7 +21,7 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
   helpers.PlaySingleton.start
 
-  val loader = new Loader()
+  val loader = new Loader(mode = Mode.Dev, config = Configuration.empty)
 
   import com.ee.utils.file
 
@@ -63,13 +64,12 @@ class SimpleFileProcessorTest extends MockTargetFolder {
     val assertNoDeploy = assertConfig(assetInfo, files) _
     val assertDeploy = assertConfig(assetInfo, files, Some(new NullDeployer)) _
 
-    def run(leadPath : String, fn : (AssetsLoaderConfig,String* ) => org.specs2.execute.Result) = {
-
+    def run(leadPath : String, deploy:Boolean, fn : (AssetsLoaderConfig,String* ) => org.specs2.execute.Result) = {
       "when working with a folder and a path" in {
 
         "work" in {
           fn(
-            AssetsLoaderConfig(false, false, false),
+            AssetsLoaderConfig(false, false, false, deploy),
             leadPath + "/" + relativeRoot + "/folder_one/one.js",
             leadPath + "/" + relativeRoot + "/root_one.js"
           )
@@ -77,13 +77,13 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
         "concat" in {
           fn(
-            AssetsLoaderConfig(concatenate = true, false, false),
+            AssetsLoaderConfig(concatenate = true, false, false, deploy),
             leadPath + "/test-" + hash + ".js")
         }
 
         "minify - but don't concat" in {
           fn(
-            AssetsLoaderConfig(concatenate = false, minify = true, gzip = false),
+            AssetsLoaderConfig(concatenate = false, minify = true, gzip = false, deploy),
             leadPath + "/" + relativeRoot + "/folder_one/one.min.js",
             leadPath + "/" + relativeRoot + "/root_one.min.js"
           )
@@ -91,7 +91,7 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
         "gzip - but don't concat" in {
           fn(
-            AssetsLoaderConfig(concatenate = false, minify = false, gzip = true),
+            AssetsLoaderConfig(concatenate = false, minify = false, gzip = true, deploy),
             leadPath + "/" + relativeRoot + "/folder_one/one.gz.js",
             leadPath + "/" + relativeRoot + "/root_one.gz.js"
           )
@@ -99,7 +99,7 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
         "minify + gzip - but don't concat" in {
           fn(
-            AssetsLoaderConfig(concatenate = false, minify = true, gzip = true),
+            AssetsLoaderConfig(concatenate = false, minify = true, gzip = true, deploy),
             leadPath + "/" + relativeRoot + "/folder_one/one.min.gz.js",
             leadPath + "/" + relativeRoot + "/root_one.min.gz.js"
           )
@@ -107,28 +107,24 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
         "minify" in {
           fn(
-            AssetsLoaderConfig(concatenate = true, minify = true, false),
+            AssetsLoaderConfig(concatenate = true, minify = true, false, deploy),
             leadPath + "/test-" + hash + ".min.js")
         }
 
         "gzip" in {
           fn(
-            AssetsLoaderConfig(concatenate = true, minify = true, gzip = true),
+            AssetsLoaderConfig(concatenate = true, minify = true, gzip = true, deploy),
             leadPath + "/test-" + hash + ".min.gz.js")
         }
       }
     }
 
-    "with no deployer" should {
-      run("/webpath", assertNoDeploy)
+    "with no deployer" in {
+      run("/webpath", false, assertNoDeploy)
     }
-
-    "with a deployer" should {
-      run("/deployed", assertDeploy)
+    "with a deployer" in {
+      run("/deployed", true, assertDeploy)
     }
-
-
-
 }
 
 

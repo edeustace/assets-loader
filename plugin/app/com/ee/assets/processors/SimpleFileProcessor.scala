@@ -101,7 +101,10 @@ class SimpleFileProcessor(
               }
             }
 
-            deployer.map(deployFile).getOrElse(pointToLocalFile)
+            if(config.deploy)
+              deployer.map(deployFile).getOrElse(pointToLocalFile)
+            else
+              pointToLocalFile
         }
     }.getOrElse(List())
   }

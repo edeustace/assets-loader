@@ -6,11 +6,15 @@ object Build extends sbt.Build {
 
     import Dependencies._
 
-    val appName         = "assets-loader"
-    val appVersion      = "0.10.1-SNAPSHOT"
+    val appName      = "assets-loader"
+    val baseVersion  = "0.10.1"
     val ScalaVersion = "2.10.1"
 
-    //TODO: Use the closure compiler from play sbt plugin
+    lazy val appVersion = {
+      val other = Process("git rev-parse --short HEAD").lines.head
+      baseVersion + other
+    }
+
     val main = play.Project(appName, appVersion, Seq(closureCompiler, yuiCompressor)).settings(
       resolvers ++= commonResolvers,
       organization := "com.ee",
