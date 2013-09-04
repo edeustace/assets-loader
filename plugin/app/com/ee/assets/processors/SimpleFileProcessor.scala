@@ -174,14 +174,24 @@ class SimpleFileProcessor(
 
 
   private def concatFiles(files: List[File], destination: String) {
+    Logger.debug("[concatFiles] destination: " + destination)
+    Logger.debug("[concatFiles] files: " + files)
+    val fileNames = files.map(_.getName).mkString
+    val contents = files.map(f => {
+      try {
+        readContents(f).mkString("\n")
+      } catch {
+        case e: Throwable => {
+          Logger.error("An exception occurred reading contents from " + f.getName)
+          throw new AssetsLoaderException("concatFiles: " + fileNames, e)
+        }
+      }
+    })
+
     try {
-      Logger.debug("[concatFiles] destination: " + destination)
-      Logger.debug("[concatFiles] files: " + files)
-      val contents = files.map(f => readContents(f)).mkString("\n")
       writeToFile(destination, contents)
     } catch {
       case e: Throwable => {
-        val fileNames = files.map(_.getName).mkString
         Logger.error("An exception occurred concatenating: " + fileNames)
         throw new AssetsLoaderException("concatFiles: " + fileNames, e)
       }
