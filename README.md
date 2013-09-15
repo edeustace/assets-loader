@@ -142,6 +142,10 @@ Clone the project and run `play`.
 
 
 ### Release Notes
+
+### 0.10.1
+- Created ability to specify separate js and/or css configs per mode
+
 ### 0.10-SNAPSHOT
 - Play 2.1.X support
 
