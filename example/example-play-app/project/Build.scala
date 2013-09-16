@@ -4,9 +4,9 @@ import Keys._
 object Build extends sbt.Build {
 
   val appName         = "example-2_1_4"
-  val appVersion      = "1.0-SNAPSHOT"
+  val appVersion      = "1.0"
 
-  val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1" //-SNAPSHOT"
+  val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1-071949e"
 
   val appDependencies = Seq(assetsLoader)
 
