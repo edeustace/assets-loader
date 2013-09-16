@@ -12,7 +12,7 @@ object Build extends sbt.Build {
 
     lazy val appVersion = {
       val other = Process("git rev-parse --short HEAD").lines.head
-      baseVersion //+ "-" + other
+      baseVersion + "-" + other
     }
 
     val main = play.Project(appName, appVersion, Seq(closureCompiler, yuiCompressor)).settings(
