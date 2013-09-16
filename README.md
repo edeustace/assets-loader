@@ -5,10 +5,9 @@ A play plugin that concatenates, minifies and gzips your JS or Css.
 It will process the files depending on the configuration you provide
 
 ## Supported Versions
-Play 2.1.2/Scala 2.10.1
 
-* Play 2.0.4/Scala 2.9.1 - use version 0.9.3-SNAPSHOT
-
+* Play 2.1.*/Scala 2.10.1
+* Play 2.0.4/Scala 2.9.1 - use version 0.9.3-SNAPSHOT (The source branch is called `play-2.0`)
 
 ### Running the examples
 
@@ -127,6 +126,9 @@ This allows you to for example deploy your assets to Amazon S3, then return the 
         concatenate: true
         minify: true
         gzip: true
+        # Optional: specify a jar from which to extract the 'public' assets folder.
+        # by default it'll use the main play app jar in the dist folder
+        # jarfile: "my-app.jar"
       }
     }
 
@@ -137,11 +139,23 @@ The default Assets controller in Play doesn't work with the loader because it on
 
 #### Logging
 If you want to see logs from asset loader - make sure you add a logger for 'assets-loader' to your log config.
+
+### Running production mode
+
+If you have a created a distributable app using `play dist`, the asset loader will to the following:
+
+If you have configure the name of the jarfile in the conf - it'll try and find that jar in the lib folder of your distribution. If it hasn't been configured it'll try to find the application jar file. It presumes that the application jar file is the last jar added to the classpath in the `start` script in the dist folder.
+
+
 ### Developing
 Clone the project and run `play`.
 
 
 ### Release Notes
+
+### 0.10.1
+- Created ability to specify separate js and/or css configs per mode
+
 ### 0.10-SNAPSHOT
 - Play 2.1.X support
 

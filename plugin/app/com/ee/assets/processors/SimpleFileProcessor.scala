@@ -6,18 +6,15 @@ import com.ee.assets.exceptions.AssetsLoaderException
 import com.ee.assets.models.AssetsInfo
 import com.ee.assets.models.AssetsLoaderConfig
 import com.ee.log.Logger
+import com.ee.utils.play.Separator
 import com.ee.utils.file.{nameAndSuffix, readContents, writeToFile}
 import com.ee.utils.string._
 import java.io._
-import java.util.zip.GZIPInputStream
-import scala.Left
-import scala.Right
-import scala.Some
 
 class SimpleFileProcessor(
                            info: AssetsInfo,
                            config: AssetsLoaderConfig,
-                           targetFolder: String,
+                           assetsFolder: File,
                            srcTemplate: String,
                            val suffix: String,
                            minify: (File, String) => Unit,
@@ -52,7 +49,7 @@ class SimpleFileProcessor(
     def currentParent = filePathFolder
 
     val relative = relativePath(f, currentParent)
-    val destination = makePath(targetFolder, info.filePath, relative)
+    val destination = makePath(assetsFolder, info.filePath, relative)
     Logger.debug("target file: " + destination)
 
     val targetFile = new File(destination)
@@ -80,7 +77,7 @@ class SimpleFileProcessor(
           f: File =>
 
             Logger.debug("[processFileList] ->")
-            val relative = relativePath(f, target)
+            val relative = relativePath(f, assetsFolder)
 
             def pointToLocalFile: String = {
               Logger.debug("relative: " + relative)
@@ -128,7 +125,7 @@ class SimpleFileProcessor(
 
   private def concat(path: String, files: List[File])(implicit concatenatedName: ConcatenatedName): Option[List[File]] = if (config.concatenate) {
 
-    val destination = makePath(targetFolder, info.filePath, concatenatedName)
+    val destination = makePath(assetsFolder, info.filePath, concatenatedName)
 
     Logger.debug("[concat] -> destination: " + destination)
 
@@ -203,10 +200,11 @@ class SimpleFileProcessor(
 
   private def trimLast_/(raw: String): String = if (raw.endsWith("/")) raw.substring(0, raw.length - 1) else raw
 
-  private def makePath(s: String*): String = {
-    val trimmed = s.map(trim_/ _ andThen trimLast_/ _)
-    trimmed.mkString("/")
+  private def trimSeparator(path:String) : String =  (trim_/ _ andThen trimLast_/ _)(path)
+
+  private def makePath(f : File, s: String*): String = {
+    val trimmed = s.map(trimSeparator)
+    new File( f.getPath + Separator + trimmed.mkString(Separator)).getPath
   }
 
-  private def target: File = new File(targetFolder)
 }

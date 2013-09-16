@@ -78,10 +78,8 @@ object Assets extends Controller {
 
       def fileResource : Option[java.net.URL] = {
         val p = if(resourceName.startsWith("/")) resourceName.substring(1,resourceName.length) else resourceName
-        val classes = com.ee.utils.play.classesFolder
-        val scala = classes.getParentFile
-        val target = scala.getParentFile
-        val path = List(target.getName, scala.getName, classes.getName, p).mkString("/")
+        val assetsFolder = com.ee.utils.play.assetsFolder
+        val path = List(assetsFolder.getAbsolutePath, p).mkString("/")
         val file : File =  new File(path)
         if(file.exists) Some(file.toURI.toURL) else None
       }
