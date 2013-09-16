@@ -27,13 +27,19 @@ object Loader{
     """.stripMargin
 }
 
+/**
+ * TODO: Initialize the loader using the play.plugin mechanism?
+ * @param deployer
+ * @param mode
+ * @param config
+ */
 class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Configuration) {
 
   private val jsProcessor: AssetProcessor =
-    new SimpleFileProcessor(Info, JsConfig, targetFolder, Loader.ScriptTemplate, ".js", minifyJs, loaderHash, deployer)
+    new SimpleFileProcessor(Info, JsConfig, assetsFolder, Loader.ScriptTemplate, ".js", minifyJs, loaderHash, deployer)
 
   private val cssProcessor: AssetProcessor =
-    new SimpleFileProcessor(Info, CssConfig, targetFolder, Loader.CssTemplate, ".css", minifyCss, loaderHash, deployer)
+    new SimpleFileProcessor(Info, CssConfig, assetsFolder, Loader.CssTemplate, ".css", minifyCss, loaderHash, deployer)
 
   def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = run(jsProcessor, concatPrefix)(paths: _*)
 
@@ -55,7 +61,7 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
   }
 
   def minifyCss(file: File, destination: String) {
-    Logger.debug("[minifyCss]  " + file + " destination: " + destination)
+    Logger.debug( s"[minifyCss]  $file destination: $destination")
     val contents = readContents(file)
     val compressor = new com.yahoo.platform.yui.compressor.CssCompressor(new StringReader(contents))
     val writer = new StringWriter()
@@ -64,7 +70,7 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
   }
 
   def minifyJs(file: File, destination: String) {
-    Logger.debug("[minifyJs]  " + file + " destination: " + destination)
+    Logger.debug( s"[minifyJs]  $file  destination: $destination")
     val contents = readContents(file)
     val out = JavascriptCompiler.minify(contents, None)
     writeToFile(destination, out)
@@ -91,11 +97,6 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
   private lazy val CssConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration( mode.toString.toLowerCase, Suffix.css, config)
   private lazy val JsConfig : AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.js, config)
 
-  private lazy val targetFolder: String = {
-    val Regex = """.*(target/.*?/classes).*""".r
-    val Regex(path) = com.ee.utils.play.classesFolder().getAbsolutePath
-    path + "/"
-  }
-
+  private lazy val assetsFolder: File = com.ee.utils.play.assetsFolder
 
 }
