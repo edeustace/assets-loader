@@ -21,7 +21,7 @@ object Build extends sbt.Build {
       scalaVersion := ScalaVersion,
       publishMavenStyle := true,
       publishTo <<= version { (v: String) =>
-        def isSnapshot = v.trim.endsWith("SNAPSHOT")
+        def isSnapshot = v.trim.contains("-")
         val finalPath = (if (isSnapshot) "/snapshots" else "/releases")
         Some(
           Resolver.sftp(
