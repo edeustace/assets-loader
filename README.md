@@ -89,7 +89,7 @@ This allows you to for example deploy your assets to Amazon S3, then return the 
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1-SNAPSHOT"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1-071949e"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"
