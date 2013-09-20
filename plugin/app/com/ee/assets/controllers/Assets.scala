@@ -3,6 +3,7 @@ package com.ee.assets.controllers
 import play.api._
 import play.api.mvc._
 import play.api.libs._
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.iteratee._
 
 import Play.current
@@ -135,7 +136,7 @@ object Assets extends Controller {
                     CONTENT_TYPE -> MimeTypes.forFileName(file).getOrElse(BINARY),
                     DATE -> df.print({new java.util.Date}.getTime)
                   )),
-                  resourceData
+                  body = resourceData
                 )
 
                 def gzip : Boolean = file.contains(".gz.")

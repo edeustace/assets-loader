@@ -183,7 +183,7 @@ class SimpleFileProcessor(
           throw new AssetsLoaderException("concatFiles: " + fileNames, e)
         }
       }
-    })
+    }).mkString
 
     try {
       writeToFile(destination, contents)
