@@ -1,12 +1,13 @@
 import sbt._
 import Keys._
+import play.Project._
 
-object Build extends sbt.Build {
+object ApplicationBuild extends Build {
 
-  val appName         = "example-2_1_4"
-  val appVersion      = "1.0"
+  val appName         = "example-2.2.0"
+  val appVersion      = "1.0-SNAPSHOT"
 
-  val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1-071949e"
+  val assetsLoader = "com.ee" %% "assets-loader" % "0.11-SNAPSHOT"
 
   val appDependencies = Seq(assetsLoader)
 
@@ -14,8 +15,7 @@ object Build extends sbt.Build {
   val edeustaceSnapshots = "ed eustace snapshots" at "http://edeustace.com/repository/snapshots/"
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
-    resolvers ++= Seq(edeustaceReleases,edeustaceSnapshots),
-    organization := "com.ee"
+    resolvers ++= Seq(edeustaceReleases,edeustaceSnapshots)
   )
 
 }

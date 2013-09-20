@@ -1,4 +1,3 @@
-import com.sun.tools.classfile.Dependencies
 import sbt._
 import Keys._
 import play.Project._
