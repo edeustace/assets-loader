@@ -7,7 +7,7 @@ object Build extends sbt.Build {
     import Dependencies._
 
     val appName      = "assets-loader"
-    val baseVersion  = "0.10.1"
+    val baseVersion  = "0.10.2"
     val ScalaVersion = "2.10.1"
 
     lazy val appVersion = {
