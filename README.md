@@ -153,6 +153,9 @@ Clone the project and run `play`.
 
 ### Release Notes
 
+### 0.10.2
+- Update for Play 2.2.1
+
 ### 0.10.1
 - Enable assets loader to run when app is created using `play dist`
 - Created ability to specify separate js and/or css configs per mode
