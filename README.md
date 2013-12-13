@@ -6,12 +6,12 @@ It will process the files depending on the configuration you provide
 
 ## Supported Versions
 
-* Play 2.1.*/Scala 2.10.1
+* Play 2.2.*/Scala 2.10.*
 * Play 2.0.4/Scala 2.9.1 - use version 0.9.3-SNAPSHOT (The source branch is called `play-2.0`)
 
 ### Running the examples
 
-The example is configured as a Play 2.1.2 application by default.
+The example is configured as a Play 2.2.1 application by default.
 
 To run the 2.0.4 example:
 
@@ -20,7 +20,7 @@ To run the 2.0.4 example:
     cd example-play-app
     play run
 
-To restore the 2.1.2 application:
+To restore the 2.2.1 application:
 
     cd example
     ./create-example-2.1.2
@@ -154,7 +154,7 @@ Clone the project and run `play`.
 ### Release Notes
 
 ### 0.10.2
-- Upgrade to play 2.2.1
+- Update for Play 2.2.1
 
 ### 0.10.1
 - Enable assets loader to run when app is created using `play dist`

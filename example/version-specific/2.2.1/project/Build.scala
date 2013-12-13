@@ -4,7 +4,7 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-  val appName         = "example-212"
+  val appName         = "example-221"
   val appVersion      = "1.0-SNAPSHOT"
 
   val assetsLoader = "com.ee" %% "assets-loader" % "0.10-SNAPSHOT"
