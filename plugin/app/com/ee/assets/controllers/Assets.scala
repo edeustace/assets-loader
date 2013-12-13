@@ -163,10 +163,6 @@ class AssetsBuilder extends Controller {
                   DATE -> df.print({ new java.util.Date }.getTime))),
                 resourceData)
 
-              println(">>>>>>>>>>>>>> file: " + file)
-              val gzippedName : Boolean = file.contains(".gz.")
-              println(">>>>>>>>>>>>>>: " + gzippedName)
-
               // If there is a gzipped version, even if the client isn't accepting gzip, we need to specify the
               // Vary header so proxy servers will cache both the gzip and the non gzipped version
               val gzippedResponse = if(isGzipped)
