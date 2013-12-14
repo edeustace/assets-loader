@@ -10,6 +10,7 @@ import com.ee.utils.string._
 import java.io.{StringWriter, StringReader, File}
 import play.api.{Configuration, Mode}
 import play.api.templates.Html
+import com.google.javascript.jscomp.CompilerOptions
 
 object Loader{
 
@@ -28,12 +29,12 @@ object Loader{
 }
 
 /**
- * TODO: Initialize the loader using the play.plugin mechanism?
  * @param deployer
  * @param mode
  * @param config
+ * @param closureCompilerOptions optional closure compiler options
  */
-class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Configuration) {
+class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Configuration, closureCompilerOptions : Option[CompilerOptions] = None) {
 
   private val jsProcessor: AssetProcessor =
     new SimpleFileProcessor(Info, JsConfig, assetsFolder, Loader.ScriptTemplate, ".js", minifyJs, loaderHash, deployer)
@@ -72,7 +73,7 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
   def minifyJs(file: File, destination: String) {
     Logger.debug( s"[minifyJs]  $file  destination: $destination")
     val contents = readContents(file)
-    val out = JavascriptCompiler.minify(contents, None)
+    val out = JavascriptCompiler.minify(contents, None, closureCompilerOptions)
     writeToFile(destination, out)
   }
 
