@@ -1,6 +1,7 @@
 import sbt._
 import Keys._
 import play.Project._
+import sbtrelease.ReleasePlugin._
 
 object Build extends sbt.Build {
 
@@ -15,7 +16,9 @@ object Build extends sbt.Build {
       baseVersion + "-" + other
     }
 
-    val main = play.Project(appName, appVersion, Seq(closureCompiler, yuiCompressor)).settings(
+    val main = play.Project(appName, appVersion, Seq(closureCompiler, yuiCompressor))
+      .settings(releaseSettings: _*)
+      .settings(
       resolvers ++= commonResolvers,
       organization := "com.ee",
       scalaVersion := ScalaVersion,
