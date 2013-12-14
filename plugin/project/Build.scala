@@ -8,13 +8,8 @@ object Build extends sbt.Build {
     import Dependencies._
 
     val appName      = "assets-loader"
-    val baseVersion  = "0.10.2"
+    val appVersion  = "0.10.2"
     val ScalaVersion = "2.10.1"
-
-    lazy val appVersion = {
-      val other = Process("git rev-parse --short HEAD").lines.head
-      baseVersion + "-" + other
-    }
 
     val main = play.Project(appName, appVersion, Seq(closureCompiler, yuiCompressor))
       .settings(releaseSettings: _*)
