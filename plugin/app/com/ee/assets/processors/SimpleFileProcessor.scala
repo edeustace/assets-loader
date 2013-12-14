@@ -176,14 +176,14 @@ class SimpleFileProcessor(
     val fileNames = files.map(_.getName).mkString
     val contents = files.map(f => {
       try {
-        readContents(f).mkString("\n")
+        readContents(f)
       } catch {
         case e: Throwable => {
           Logger.error("An exception occurred reading contents from " + f.getName)
           throw new AssetsLoaderException("concatFiles: " + fileNames, e)
         }
       }
-    })
+    }).mkString("\n")
 
     try {
       writeToFile(destination, contents)

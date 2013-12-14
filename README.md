@@ -62,7 +62,9 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
 
 ### Api
 
-    val loader = new com.ee.assets.Loader()
+    //Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Configuration, closureCompilerOptions : Option[CompilerOptions] = None)
+    val loader = new com.ee.assets.Loader(None, Play.current.mode, Play.current.configuration)
+
     loader.scripts("name")("path_to_scripts_folder_or_file", ...)
     loader.css("name")("path_to_css_folder_or_file", ...)
 
@@ -84,6 +86,10 @@ This allows you to for example deploy your assets to Amazon S3, then return the 
     loader.scripts("name")("path_to_scripts_folder_or_file", ...)
     loader.css("name")("path_to_css_folder_or_file", ...)
 
+
+### Closure compiler options
+
+You can pass in your own closure compiler options when you are instantiating the Loader instance. If you pass in nothing it'll use the default settings.
 
 ## Installing
 
