@@ -95,7 +95,10 @@ You can pass in your own closure compiler options when you are instantiating the
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1-071949e"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.11.1"
+      
+      // snapshot version
+      //val assetsLoader = "com.ee" %% "assets-loader" % "0.11.2-SNAPSHOT"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"
@@ -159,7 +162,10 @@ Clone the project and run `play`.
 
 ### Release Notes
 
-### 0.10.2
+### 0.11.1 
+- Added optional closure CompilerOptions as parameter to the loader
+
+### 0.11.0
 - Update for Play 2.2.1
 
 ### 0.10.1
