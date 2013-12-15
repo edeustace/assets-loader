@@ -6,8 +6,7 @@ It will process the files depending on the configuration you provide
 
 ## Supported Versions
 
-* Play 2.1.*/Scala 2.10.1
-* Play 2.0.4/Scala 2.9.1 - use version 0.9.3-SNAPSHOT (The source branch is called `play-2.0`)
+* Play 2.1.*/Scala 2.10.1 - version: 0.10.*
 
 ### Running the examples
 
