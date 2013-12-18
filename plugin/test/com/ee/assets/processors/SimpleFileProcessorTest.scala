@@ -9,6 +9,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.{Scope, Fragments, Step}
 import scala.xml.{Node, Elem}
 import play.api.{Mode, Configuration}
+import grizzled.file.util
 
 
 class SimpleFileProcessorTest extends MockTargetFolder {
@@ -17,7 +18,7 @@ class SimpleFileProcessorTest extends MockTargetFolder {
 
   def targetFolder: String = "test/mock-target/test/public/com/ee/assets"
 
-  def contentsPath: String = "test/public/com/ee/assets/processors"
+  def contentsPath: String = "test/public/com/ee/assets/"
 
   helpers.PlaySingleton.start
 
@@ -38,19 +39,19 @@ class SimpleFileProcessorTest extends MockTargetFolder {
     import com.ee.utils.file.{hash => hashFn, fileToString}
     val processor = new SimpleFileProcessor(assetInfo, c, new File("test/mock-target"), Loader.ScriptTemplate, ".js", loader.minifyJs, hashFn(_, fileToString), deployer)
     val out = processor.process("test", files)
-    val xml = scala.xml.XML.loadString("<head>" + out.mkString("\n") + "</head>")
-    (xml \\ "script").length === expectedFiles.length
-    assertSrc(xml, expectedFiles: _*)
+    out.length === expectedFiles.length
+    assertSrc(out, expectedFiles: _*)
   }
 
-  def assertSrc(xml: Elem, sources: String*): MatchResult[Any] = {
-    val lengthAssertion = (xml \\ "script").length === sources.length
+  def assertSrc(scripts: List[String], sources: String*): MatchResult[Any] = {
+    val xml = scala.xml.XML.loadString("<head>" + scripts.mkString("\n") + "</head>")
     val assertions = (xml \\ "script").toList.zipWithIndex.map {
       t: (Node, Int) =>
-        (t._1 \ "@src").text === sources(t._2)
+        val (node,index) = t
+        (node \ "@src").text === sources(index)
     }
 
-    (assertions :+ lengthAssertion).filterNot {
+    (assertions).filterNot {
       r => r match {
         case MatchSuccess(_, _, _) => true
         case _ => false
@@ -61,77 +62,88 @@ class SimpleFileProcessorTest extends MockTargetFolder {
   def path(s: String*) = s.mkString("/")
 
 
-    val assertNoDeploy = assertConfig(assetInfo, files) _
-    val assertDeploy = assertConfig(assetInfo, files, Some(new NullDeployer)) _
+  val assertNoDeploy = assertConfig(assetInfo, files) _
+  val assertDeploy = assertConfig(assetInfo, files, Some(new NullDeployer)) _
 
-    def run(leadPath : String, deploy:Boolean, fn : (AssetsLoaderConfig,String* ) => org.specs2.execute.Result) = {
-      "when working with a folder and a path" in {
+  def run(leadPath: String, deploy: Boolean, fn: (AssetsLoaderConfig, String *) => org.specs2.execute.Result) = {
+    "when working with a folder and a path" in {
 
-        "work" in {
-          fn(
-            AssetsLoaderConfig(false, false, false, deploy),
-            leadPath + "/" + relativeRoot + "/folder_one/one.js",
-            leadPath + "/" + relativeRoot + "/root_one.js"
-          )
-        }
 
-        "concat" in {
-          fn(
-            AssetsLoaderConfig(concatenate = true, false, false, deploy),
-            leadPath + "/test-" + hash + ".js")
-        }
-
-        "minify - but don't concat" in {
-          fn(
-            AssetsLoaderConfig(concatenate = false, minify = true, gzip = false, deploy),
-            leadPath + "/" + relativeRoot + "/folder_one/one.min.js",
-            leadPath + "/" + relativeRoot + "/root_one.min.js"
-          )
-        }
-
-        "gzip - but don't concat" in {
-          fn(
-            AssetsLoaderConfig(concatenate = false, minify = false, gzip = true, deploy),
-            leadPath + "/" + relativeRoot + "/folder_one/one.gz.js",
-            leadPath + "/" + relativeRoot + "/root_one.gz.js"
-          )
-        }
-
-        "minify + gzip - but don't concat" in {
-          fn(
-            AssetsLoaderConfig(concatenate = false, minify = true, gzip = true, deploy),
-            leadPath + "/" + relativeRoot + "/folder_one/one.min.gz.js",
-            leadPath + "/" + relativeRoot + "/root_one.min.gz.js"
-          )
-        }
-
-        "minify" in {
-          fn(
-            AssetsLoaderConfig(concatenate = true, minify = true, false, deploy),
-            leadPath + "/test-" + hash + ".min.js")
-        }
-
-        "gzip" in {
-          fn(
-            AssetsLoaderConfig(concatenate = true, minify = true, gzip = true, deploy),
-            leadPath + "/test-" + hash + ".min.gz.js")
-        }
+      "work" in {
+        fn(
+          AssetsLoaderConfig(false, false, false, deploy),
+          leadPath + "/" + relativeRoot + "/folder_one/one.js",
+          leadPath + "/" + relativeRoot + "/root_one.js"
+        )
       }
-    }
 
-    "with no deployer" in {
-      run("/webpath", false, assertNoDeploy)
+      "concat" in {
+        fn(
+          AssetsLoaderConfig(concatenate = true, false, false, deploy),
+          leadPath + "/test-" + hash + ".js")
+      }
+
+
+      "minify - but don't concat" in {
+        fn(
+          AssetsLoaderConfig(concatenate = false, minify = true, gzip = false, deploy),
+          leadPath + "/" + relativeRoot + "/folder_one/one.min.js",
+          leadPath + "/" + relativeRoot + "/root_one.min.js"
+        )
+      }
+
+
+      "gzip - but don't concat" in {
+        fn(
+          AssetsLoaderConfig(concatenate = false, minify = false, gzip = true, deploy),
+          leadPath + "/" + relativeRoot + "/folder_one/one.gz.js",
+          leadPath + "/" + relativeRoot + "/root_one.gz.js"
+        )
+      }
+
+
+      "minify + gzip - but don't concat" in {
+        fn(
+          AssetsLoaderConfig(concatenate = false, minify = true, gzip = true, deploy),
+          leadPath + "/" + relativeRoot + "/folder_one/one.min.gz.js",
+          leadPath + "/" + relativeRoot + "/root_one.min.gz.js"
+        )
+      }
+
+
+      "minify" in {
+        fn(
+          AssetsLoaderConfig(concatenate = true, minify = true, false, deploy),
+          leadPath + "/test-" + hash + ".min.js")
+      }
+
+      "gzip" in {
+        fn(
+          AssetsLoaderConfig(concatenate = true, minify = true, gzip = true, deploy),
+          leadPath + "/test-" + hash + ".min.gz.js")
+      }
+
     }
-    "with a deployer" in {
-      run("/deployed", true, assertDeploy)
-    }
+  }
+
+
+  "with no deployer" in {
+    run("/webpath", false, assertNoDeploy)
+  }
+
+
+  "with a deployer" in {
+    run("/deployed", true, assertDeploy)
+  }
+
 }
-
 
 
 trait MockTargetFolder extends Specification {
 
-  import scala.sys.process._
+  import java.io.{File}
+
+
 
   def targetRoot: String
 
@@ -143,17 +155,19 @@ trait MockTargetFolder extends Specification {
 
   def before {
     //Note - using the full syntax here so we don't conflict with specs2
-    println("copying over to test target dir..")
-    val mkdir: String = "mkdir -p " + targetFolder
-    stringToProcess(mkdir).run()
-    val cpR: String = "cp -r " + contentsPath + " " + targetFolder
-    stringToProcess(cpR).run()
+    println("copying over to test target dir.." + targetFolder)
+    val dir = new File(targetFolder)
+    if (!dir.exists()) {
+      dir.mkdir()
+    }
+
+    util.copyTree(contentsPath, targetFolder)
   }
 
   def after {
     println("removing target dir.")
-    val rm = "rm -fr " + targetRoot
-    stringToProcess(rm).run()
+    util.deleteTree(targetRoot)
   }
+
 }
 

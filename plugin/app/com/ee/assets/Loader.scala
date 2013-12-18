@@ -77,6 +77,8 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
     writeToFile(destination, out)
   }
 
+
+
   /** Use only the name for hashing on production as the file will not change */
   private def loaderHash(files:List[File]) : String = {
     import com.ee.utils.file._

@@ -15,7 +15,7 @@ object Build extends sbt.Build {
       //, appVersion, Seq(closureCompiler, yuiCompressor))
       .settings(releaseSettings: _*)
       .settings(
-        libraryDependencies ++= Seq(closureCompiler, yuiCompressor),
+        libraryDependencies ++= Seq(closureCompiler, yuiCompressor, grizzled),
         resolvers ++= commonResolvers,
         organization := "com.ee",
         scalaVersion := ScalaVersion,

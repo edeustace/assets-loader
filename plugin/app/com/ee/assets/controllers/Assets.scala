@@ -14,6 +14,7 @@ import scala.util.control.NonFatal
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.utils.UriEncoding
 
+
 /**
  * Controller that serves static resources.
  *
