@@ -24,6 +24,7 @@ class SimpleFileProcessor(
 
   type ConcatenatedName = String
 
+
   /** Process the files
     * @param files - these files are in the static config folder as defined AssetsInfo.filePath
     *              Typically this is the '/public' folder in the app.
@@ -37,6 +38,7 @@ class SimpleFileProcessor(
 
     implicit val concatenatedName: ConcatenatedName = prefix + "-" + hash(files) + suffix
     Logger.debug("Concatentated name: " + concatenatedName)
+
     val filesInTargetFolder = files.map(toFileInTargetFolder)
     processFileList(info.filePath, filesInTargetFolder)
   }
@@ -45,7 +47,7 @@ class SimpleFileProcessor(
     */
   private def toFileInTargetFolder(f: File): File = {
 
-    def filePathFolder: File = if (info.filePath.startsWith("/")) new File("." + info.filePath) else new File(info.filePath)
+    def filePathFolder: File = if (info.filePath.startsWith(Separator)) new File("." + info.filePath) else new File(info.filePath)
     def currentParent = filePathFolder
 
     val relative = relativePath(f, currentParent)
@@ -81,13 +83,15 @@ class SimpleFileProcessor(
 
             def pointToLocalFile: String = {
               Logger.debug("relative: " + relative)
-              val withWebPath = __/|/(relative.replace(info.filePath, info.webPath))
-              Logger.debug("web path: " + withWebPath)
-              scriptTag(withWebPath)
+              val withWebPath = normalizeToUrl(relative)
+              val normalizedWebPath = normalizeToUrl(withWebPath.replace(info.filePath, info.webPath))
+              Logger.debug("web path: " + normalizedWebPath)
+              scriptTag(normalizedWebPath)
             }
 
             def deployFile(d: Deployer): String = {
-              val trimmed = __/|/(relative.replace(info.filePath, ""))
+              val trimmed = normalizeToUrl(normalizeToUrl(relative).replace(info.filePath, ""))
+
               Logger.debug("calling deploy with: " + trimmed)
 
               def stream : InputStream = if (config.gzip) bufferedInputStream(f) else byteArrayStream(f)
@@ -202,7 +206,7 @@ class SimpleFileProcessor(
     com.ee.utils.gzip.gzip(contents, destination)
   }
 
-  private def __/|/(s: String): String = s.replace("/./", "/").replace("//", "/")
+  def normalizeToUrl(s: String): String = s.replace("\\","/").replace("/./", "/").replace("//", "/")
 
   private def scriptTag(url: String): String = interpolate(srcTemplate, ("src", url))
 

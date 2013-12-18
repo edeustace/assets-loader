@@ -16,6 +16,8 @@ object Dependencies{
 
   val yuiCompressor = "com.yahoo.platform.yui" % "yuicompressor" % "2.4.7"
 
+  val grizzled = "org.clapper" % "grizzled-scala_2.10" % "1.1.4"
+
   val scalaTools =  "scala-tools" at "http://scala-tools.org/repo-releases/"
   val scalaToolsSnapshots =  "scala-tools-snapshots" at "http://scala-tools.org/repo-snapshots/"
   val commonResolvers = Seq(scalaTools, scalaToolsSnapshots)
