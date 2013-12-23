@@ -21,10 +21,15 @@ package object play {
   }
 
   private def initAssetsFolder: File = {
-    classesFolder orElse explodedJarFolder getOrElse {
-      throw new AssetsLoaderException("Error can't find a class folder or exploded jar folder")
+    if (new File("target/universal").exists) {
+      Logger.debug("initialising exploded jar...")
+      explodedJarFolder
+    } else {
+      Logger.debug("initialising classes folder...")
+      classesFolder
     }
-  }
+  }.getOrElse(throw new AssetsLoaderException("Error can't find a class folder or exploded jar folder"))
+
 
   private def classesFolder(): Option[File] = {
     val target: File = new File("target")
@@ -34,66 +39,65 @@ package object play {
     } else {
       target.listFiles.toList.find(_.getName.startsWith("scala-")) match {
         case Some(scalaFolder) => {
+          Logger.debug(s"found ${scalaFolder.getName}")
           val path = List(target.getName, scalaFolder.getName, "classes").mkString(Separator)
           val file: File = new File(path)
-          if (file.exists) Some(file) else None
+          if (file.exists) Some(file) else throw new RuntimeException("can't find 'target/scala-${version}/classes' folder")
         }
-        case _ => throw new RuntimeException("can't find scala-${version} folder")
+        case _ => None
       }
     }
   }
 
-  private def getAppJarName: Option[String] = {
+  private def getAppJar: Option[File] = {
 
-    /** Parse the ./start script and pick the last jar declared on the classpath (presumed to be the app jar).
-      * @return
-      */
-    def loadFromStartScript: Option[String] = {
-      val startScript: File = Play.current.getFile("start")
-      if (!startScript.exists) {
-        None
-      } else {
-        val maybeClasspath = scala.io.Source.fromFile(startScript).getLines().find(_.contains("classpath="))
-        try {
-          maybeClasspath.map {
-            cp =>
-              val ClasspathRegex(jarName) = cp
-              Logger.debug(s"Found jar: $jarName")
-              jarName
-          }
-        }
-        catch {
-          case e: Throwable => {
-            Logger.warn(e.getMessage)
-            None
-          }
-        }
-      }
+    /**
+     * the script name is the app name, so read it then use it to return the app jar from the lib folder.
+     * @return
+     */
+    def loadFromScriptName: Option[File] = {
+      val binFolder: File = Play.current.getFile("bin")
+      val libFolder: File = Play.current.getFile("lib")
+      Logger.debug(s"using bin folder: ${binFolder.getAbsolutePath}")
+      Logger.debug(s"using lib folder: ${libFolder.getAbsolutePath}")
+
+      for {
+        scriptFile <- binFolder.listFiles().filterNot(_.getName.endsWith(".bat")).headOption
+        if (scriptFile.exists)
+        name <- Some(scriptFile.getName)
+        appJar <- libFolder.listFiles().filter(_.getName.startsWith(s"$name.$name-")).headOption
+      } yield appJar
     }
 
     val configuredJarfile = Play.current.configuration.getString("assetsLoader.prod.jarfile")
 
     Logger.debug(s"Configured jar file: $configuredJarfile")
 
-    configuredJarfile.map(f => s"lib/$f").orElse(loadFromStartScript)
-  }
+    configuredJarfile.map {
+      f =>
+        Play.current.getFile(s"lib/$f")
 
-  private val ClasspathRegex = """classpath=".*\$scriptdir/(.*)"""".r
+    }.orElse(loadFromScriptName)
+  }
 
   /**
    * If a classes folder can't be found it is assumed that the app is run in prod mode aka its been zipped up using `play dist`.
    * The name of the jar to explode can be specfied in the config file: assets.loader.prod.jarfile = XXX
-   * otherwise we try and find a the jar that contains the assets. To find this we parse the `start` script and look for the last jar
-   * listed on the classpath and expand that.
+   * otherwise we try and find a the jar that contains the assets, expand it using the `jar xf` command and then return the path
    * @return
    */
-  private def explodedJarFolder: Option[File] = getAppJarName.map {
-    name =>
-      val jarPath = Play.current.getFile(name).getAbsolutePath
+  private def explodedJarFolder: Option[File] = getAppJar.map {
+    jar =>
+      val jarPath = jar.getAbsolutePath
       import scala.sys.process._
       Logger.debug(s"jar path: $jarPath")
-      s"jar xf $jarPath public".!
-      new File(".")
+      val command =  s"jar xf $jarPath public"
+      Logger.debug(s"running command: $command")
+      command.!
+      def currentDir = "pwd".!!.trim
+      val out = new File(currentDir)
+      Logger.debug(s"exploded folder: ${out.getAbsolutePath}")
+      out
   }
 
 }
