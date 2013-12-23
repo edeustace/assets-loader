@@ -102,15 +102,16 @@ package object play {
 
       if( new File("public").exists ){
         def devModeTidyUp = {
+          import grizzled.file.util._
           //Note: to prevent generated files from being written to the app's public folder
           //in dev mode, we back up public, expand the jar's public folder and then move it.
           //the we tidy up.
-          grizzled.file.util.copyTree("public", "___backup_public")
+          copyTree("public", "___backup_public")
           command.!
-          grizzled.file.util.copyTree("public", s"$destination/public")
-          grizzled.file.util.deleteTree("public")
-          grizzled.file.util.copyTree("___backup_public", "public")
-          grizzled.file.util.deleteTree("___backup_public")
+          copyTree("public", s"$destination/public")
+          deleteTree("public")
+          copyTree("___backup_public", "public")
+          deleteTree("___backup_public")
           Logger.debug(s"running command: $command")
         }
         devModeTidyUp
