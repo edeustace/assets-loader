@@ -6,26 +6,20 @@ It will process the files depending on the configuration you provide
 
 ## Supported Versions
 
-* Play 2.2.*/Scala 2.10.* - version: > 0.11, branch: `master`
+* Play 2.2.*/Scala 2.10.* - version: > 0.11, branch: `master` (this branch no longer supports older play versions)
 * Play 2.1.*/Scala 2.9.1 - version: 0.10.x, branch: `play-2.1.x`
 
 ### Running the examples
 
 The example is configured as a Play 2.2.1 application by default.
 
-To run the 2.0.4 example:
+To see the logs in dev mode run: 
+    
+     play -Dlogger.file=conf/logging/prod.xml
 
-    cd example
-    ./create-example-2.0.4
-    cd example-play-app
-    play run
+To see the logs in prod mode run: 
 
-To restore the 2.2.1 application:
-
-    cd example
-    ./create-example-2.1.2
-    cd example-play-app
-    play run
+    ./target/universal/stage/bin/example-221 -Dlogger.file=conf/logging/prod.xml
 
 
 ## Description
@@ -161,6 +155,11 @@ Clone the project and run `play`.
 
 
 ### Release Notes
+
+### 0.11.2
+
+- Fixed issues with prod mode + play 2.2.1
+- Support in dev mode for windows style paths
 
 ### 0.11.1 
 - Added optional closure CompilerOptions as parameter to the loader
