@@ -42,7 +42,9 @@ package object play {
           Logger.debug(s"found ${scalaFolder.getName}")
           val path = List(target.getName, scalaFolder.getName, "classes").mkString(Separator)
           val file: File = new File(path)
-          if (file.exists) Some(file) else throw new RuntimeException("can't find 'target/scala-${version}/classes' folder")
+          if (file.exists) {
+            Some(file)
+          } else throw new RuntimeException("can't find 'target/scala-${version}/classes' folder")
         }
         case _ => None
       }
@@ -90,6 +92,7 @@ package object play {
     jar =>
       val jarPath = jar.getAbsolutePath
       import scala.sys.process._
+      "cd target/universal/stage".!
       Logger.debug(s"jar path: $jarPath")
       val command =  s"jar xf $jarPath public"
       Logger.debug(s"running command: $command")
