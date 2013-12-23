@@ -92,15 +92,36 @@ package object play {
     jar =>
       val jarPath = jar.getAbsolutePath
       import scala.sys.process._
-      "cd target/universal/stage".!
+      "pwd".!
       Logger.debug(s"jar path: $jarPath")
-      val command =  s"jar xf $jarPath public"
-      Logger.debug(s"running command: $command")
-      command.!
+
+      val destination = "target/universal/stage"
+
       def currentDir = "pwd".!!.trim
-      val out = new File(currentDir)
-      Logger.debug(s"exploded folder: ${out.getAbsolutePath}")
-      out
+      val command =  s"jar xf $jarPath public"
+
+      if( new File("public").exists ){
+        def devModeTidyUp = {
+          //Note: to prevent generated files from being written to the app's public folder
+          //in dev mode, we back up public, expand the jar's public folder and then move it.
+          //the we tidy up.
+          grizzled.file.util.copyTree("public", "___backup_public")
+          command.!
+          grizzled.file.util.copyTree("public", s"$destination/public")
+          grizzled.file.util.deleteTree("public")
+          grizzled.file.util.copyTree("___backup_public", "public")
+          grizzled.file.util.deleteTree("___backup_public")
+          Logger.debug(s"running command: $command")
+        }
+        devModeTidyUp
+        val out = new File(currentDir + "/" + destination )
+        out
+      } else {
+        command.!
+        val out = new File(currentDir)
+        Logger.debug(s"exploded folder: ${out.getAbsolutePath}")
+        out
+      }
   }
 
 }
