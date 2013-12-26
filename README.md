@@ -157,7 +157,7 @@ Clone the project and run `play`.
 ### Release Notes
 
 ### 0.11.2
-
+- Always read files as utf-8
 - Fixed issues with prod mode + play 2.2.1
 - Support in dev mode for windows style paths
 
