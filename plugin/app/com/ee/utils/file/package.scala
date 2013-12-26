@@ -18,7 +18,7 @@ package object file {
 
     Logger.debug("file.readContents: " + f.getName)
     if (f.exists) {
-      val source = scala.io.Source.fromFile(f)
+      val source = scala.io.Source.fromFile(f)(io.Codec("UTF-8"))
       val lines = source.mkString
       source.close()
       lines
