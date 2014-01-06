@@ -10,22 +10,9 @@ It will process the files depending on the configuration you provide
 
 ### Running the examples
 
-The example is configured as a Play 2.1.2 application by default.
+The example is a Play 2.1.4 application.
 
-To run the 2.0.4 example:
-
-    cd example
-    ./create-example-2.0.4
-    cd example-play-app
-    play run
-
-To restore the 2.1.2 application:
-
-    cd example
-    ./create-example-2.1.2
-    cd example-play-app
-    play run
-
+     play run
 
 ## Description
 
@@ -94,7 +81,8 @@ You can pass in your own closure compiler options when you are instantiating the
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.10.1-071949e"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.10.4"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.10.5-SNAPSHOT"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"
@@ -131,9 +119,8 @@ You can pass in your own closure compiler options when you are instantiating the
         concatenate: true
         minify: true
         gzip: true
-        # Optional: specify a jar from which to extract the 'public' assets folder.
-        # by default it'll use the main play app jar in the dist folder
-        # jarfile: "my-app.jar"
+        # Required if running in prod mode: specify a jar from which to extract the 'public' assets folder.
+        # jarfile: "target/staged/my-app.jar"
       }
     }
 
@@ -157,6 +144,9 @@ Clone the project and run `play`.
 
 
 ### Release Notes
+
+### 0.10.4 
+- Fix more issues with running in prod mode.
 
 ### 0.10.1
 - Enable assets loader to run when app is created using `play dist`

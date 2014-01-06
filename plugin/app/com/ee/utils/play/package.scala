@@ -44,41 +44,10 @@ package object play {
   }
 
   private def getAppJarName: Option[String] = {
-
-    /** Parse the ./start script and pick the last jar declared on the classpath (presumed to be the app jar).
-      * @return
-      */
-    def loadFromStartScript: Option[String] = {
-      val startScript: File = Play.current.getFile("start")
-      if (!startScript.exists) {
-        None
-      } else {
-        val maybeClasspath = scala.io.Source.fromFile(startScript).getLines().find(_.contains("classpath="))
-        try {
-          maybeClasspath.map {
-            cp =>
-              val ClasspathRegex(jarName) = cp
-              Logger.debug(s"Found jar: $jarName")
-              jarName
-          }
-        }
-        catch {
-          case e: Throwable => {
-            Logger.warn(e.getMessage)
-            None
-          }
-        }
-      }
-    }
-
     val configuredJarfile = Play.current.configuration.getString("assetsLoader.prod.jarfile")
-
     Logger.debug(s"Configured jar file: $configuredJarfile")
-
-    configuredJarfile.map(f => s"lib/$f").orElse(loadFromStartScript)
+    configuredJarfile.orElse(throw new RuntimeException("If you are running in production mode, you must specify the relative path (from start script -> jar)"))
   }
-
-  private val ClasspathRegex = """classpath=".*\$scriptdir/(.*)"""".r
 
   /**
    * If a classes folder can't be found it is assumed that the app is run in prod mode aka its been zipped up using `play dist`.
@@ -89,6 +58,7 @@ package object play {
    */
   private def explodedJarFolder: Option[File] = getAppJarName.map {
     name =>
+      Logger.debug(s"name: $name")
       val jarPath = Play.current.getFile(name).getAbsolutePath
       import scala.sys.process._
       Logger.debug(s"jar path: $jarPath")
