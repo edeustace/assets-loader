@@ -36,9 +36,9 @@ package object play {
         case Some(scalaFolder) => {
           val path = List(target.getName, scalaFolder.getName, "classes").mkString(Separator)
           val file: File = new File(path)
-          if (file.exists) Some(file) else None
+          if (file.exists) Some(file) else throw new RuntimeException("can't find scala-${version}/classes folder")
         }
-        case _ => throw new RuntimeException("can't find scala-${version} folder")
+        case _ => None
       }
     }
   }
