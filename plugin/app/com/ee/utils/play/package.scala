@@ -63,12 +63,21 @@ package object play {
       Logger.debug(s"using bin folder: ${binFolder.getAbsolutePath}")
       Logger.debug(s"using lib folder: ${libFolder.getAbsolutePath}")
 
+      val scriptFile = binFolder.listFiles().filterNot(_.getName.endsWith(".bat")).headOption
+      Logger.trace(s"scriptFile: ${scriptFile.map(_.getName).getOrElse("doesn't exist")} ")
+      val jars = libFolder.listFiles()
+      Logger.trace(s"jars: ${jars.mkString("\n")} ")
+
+
       for {
         scriptFile <- binFolder.listFiles().filterNot(_.getName.endsWith(".bat")).headOption
         if (scriptFile.exists)
         name <- Some(scriptFile.getName)
-        appJar <- libFolder.listFiles().filter(_.getName.startsWith(s"$name.$name-")).headOption
-      } yield appJar
+        appJar <- libFolder.listFiles().filter(_.getName.contains(s".$name-")).headOption
+      } yield {
+        appJar
+      }
+
     }
 
     val configuredJarfile = Play.current.configuration.getString("assetsLoader.prod.jarfile")
