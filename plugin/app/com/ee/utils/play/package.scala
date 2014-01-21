@@ -11,10 +11,7 @@ package object play {
 
   private var cachedAssetsFolder: File = null
 
-  val applicationRoot = Play.getFile(".")
-
   val Separator = sys.env.get("file.separator").getOrElse("/")
-
 
   def assetsFolder(): File = {
     if (cachedAssetsFolder == null) {
@@ -26,11 +23,10 @@ package object play {
 
   private def initAssetsFolder: File = {
 
-
-    Logger.trace(s"App root: $applicationRoot")
+    Logger.trace(s"App root: ${Play.getFile(".")}")
 
     if( Play.getFile("lib").exists){
-      Logger.debug("This is a dist structure: initialising exploded jar...")
+      Logger.debug("This is a dist/stage structure: initialising exploded jar...")
       explodedJarFolder
     } else if (Play.getFile("target/universal").exists) {
       Logger.debug("This is a stage structure: initialising exploded jar...")
@@ -115,41 +111,7 @@ package object play {
       val jarPath = jar.getAbsolutePath
       Logger.debug(s"jar path: $jarPath")
       def filter(s:String) = s.startsWith("public")
-
-      //Play.getFile("public").mkdir()
-      //Logger.trace(s"Created public folder: ${Play.getFile("public").getAbsolutePath}")
       extractJar(jar, Play.getFile("."), filter)
-      /*val destination = "target/universal/stage"
-
-      def currentDir = "pwd".!!.trim
-
-      Logger.debug(s"currentDir: $currentDir")
-
-      val command =  s"jar xf $jarPath public"
-
-      if( new File("public").exists ){
-        def devModeTidyUp = {
-          import grizzled.file.util._
-          //Note: to prevent generated files from being written to the app's public folder
-          //in dev mode, we back up public, expand the jar's public folder and then move it.
-          //the we tidy up.
-          copyTree("public", "___backup_public")
-          command.!
-          copyTree("public", s"$destination/public")
-          deleteTree("public")
-          copyTree("___backup_public", "public")
-          deleteTree("___backup_public")
-          Logger.debug(s"running command: $command")
-        }
-        devModeTidyUp
-        val out = new File(currentDir + "/" + destination )
-        out
-      } else {
-        command.!
-        val out = new File(currentDir)
-        Logger.debug(s"exploded folder: ${out.getAbsolutePath}")
-        out
-      }*/
   }
 
 }
