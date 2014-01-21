@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby 
+
+require_relative '../libs/utils'
+
+stage = "dist-stage-tests/stage"
+
+Dir.chdir "example/example-play-app"
+
+puts "run play clean update stage"
+`play clean update stage`
+
+Dir.chdir "../.."
+
+puts "remove existing universal"
+`rm -rf #{stage}/universal`
+
+puts "cp universal"
+`cp -r example/example-play-app/target/universal #{stage}`
+
+script = Dir["#{stage}/universal/stage/bin/*[^\.bat]"][0]
+
+puts "script: #{script}"
+
+raise "script is nil" unless script != nil
+
+Logger.run "./#{script}"

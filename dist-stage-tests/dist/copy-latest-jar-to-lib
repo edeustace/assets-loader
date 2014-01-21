@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+dist = "dist-stage-tests/dist"
+
+target = "plugin/target/scala-2.10" 
+
+jars = Dir["#{target}/assets-loader_*[^sources].jar"]
+
+raise "too many jars matching" if jars.length > 1
+
+jar = jars[0]
+zip_path = Dir["#{dist}/*.zip"][0]
+dir_path = zip_path.gsub("\.zip", "")
+
+puts "jar: #{jar}"
+puts "dir: #{dir_path}"
+
+name_to_use = Dir["#{dir_path}/lib/*assets-loader*.jar"][0]
+
+puts "copy to: #{name_to_use}"
+`rm -rf #{dir_path}/lib/*assets-loader*`
+`cp #{jar} #{name_to_use}`

@@ -46,6 +46,17 @@ package object file {
     withChildren.flatten.distinct
   }
 
+  def relativePath(child: File, parent: File): String = {
+    val childFullPath = child.getCanonicalPath
+    val parentFullPath = parent.getCanonicalPath
+
+    if (childFullPath.startsWith(parentFullPath)) {
+      childFullPath.replace(parentFullPath, "")
+    } else {
+      throw new RuntimeException("Error getting relative path the child isn't actually a child: " + childFullPath + " parent: " + parentFullPath)
+    }
+  }
+
 
   def typeFilter(suffix: String, files: List[File]): List[File] = files.filter(_.getName.endsWith(suffix))
 

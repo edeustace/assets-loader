@@ -8,7 +8,7 @@ import com.ee.log.Logger
 import com.ee.utils.file._
 import com.ee.utils.string._
 import java.io.{StringWriter, StringReader, File}
-import play.api.{Configuration, Mode}
+import play.api.{Play, Configuration, Mode}
 import play.api.templates.Html
 import com.google.javascript.jscomp.CompilerOptions
 
@@ -50,7 +50,10 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
     if (paths.length == 0) {
       Html("<!-- AssetLoader :: error : no paths to load -->")
     } else {
-      val pathsAsFiles: List[File] = paths.map(p => new File("." + Info.filePath + "/" + p)).toList
+      import Play.current
+
+      val pathsAsFiles: List[File] = paths.map(p => Play.getFile( s".${Info.filePath}${File.separator}$p") ).toList
+      Logger.trace(s"paths: $pathsAsFiles")
       val allFiles = distinctFiles(pathsAsFiles: _*)
       val typedFiles = typeFilter(processor.suffix, allFiles)
       val assets = processor.process(concatPrefix, typedFiles)

@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby 
+
+require_relative '../libs/utils'
+
+dist = "dist-stage-tests/dist"
+
+Dir.chdir "example/example-play-app"
+
+puts "run play clean dist"
+`play clean dist`
+
+Dir.chdir "../.."
+
+zip = Dir['example/example-play-app/target/universal/example-*.zip'][0]
+
+puts "zip: #{zip}"
+name = File.basename(zip)
+dir_name = File.basename(zip,".zip")
+`rm -rf #{dist}/#{name}`
+`rm -rf #{dist}/#{dir_name}`
+
+puts "copy zip"
+`cp #{zip} #{dist}`
+
+Dir.chdir dist 
+
+`unzip #{name}`
+
+script = Dir["#{dir_name}/bin/*[^\.bat]"][0]
+
+puts "script: #{script}"
+
+raise "script is nil" unless script != nil
+
+Logger.run "./#{script}"
+
+
+
+
+
+
+

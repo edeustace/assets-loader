@@ -1,13 +1,17 @@
 package com.ee.utils
 
 import _root_.play.api.Play
+import _root_.play.api.Play.current
 import java.io._
 import com.ee.log.Logger
 import com.ee.assets.exceptions.AssetsLoaderException
+import java.util.jar.{JarEntry, JarFile}
 
 package object play {
 
   private var cachedAssetsFolder: File = null
+
+  val applicationRoot = Play.getFile(".")
 
   val Separator = sys.env.get("file.separator").getOrElse("/")
 
@@ -21,11 +25,19 @@ package object play {
   }
 
   private def initAssetsFolder: File = {
-    if (new File("target/universal").exists) {
-      Logger.debug("initialising exploded jar...")
+
+
+    Logger.trace(s"App root: $applicationRoot")
+
+    if( Play.getFile("lib").exists){
+      Logger.debug("This is a dist structure: initialising exploded jar...")
+      explodedJarFolder
+    } else if (Play.getFile("target/universal").exists) {
+      Logger.debug("This is a stage structure: initialising exploded jar...")
       explodedJarFolder
     } else {
       Logger.debug("initialising classes folder...")
+      Logger.trace(s"folder: $classesFolder")
       classesFolder
     }
   }.getOrElse(throw new AssetsLoaderException("Error can't find a class folder or exploded jar folder"))
@@ -99,14 +111,20 @@ package object play {
    */
   private def explodedJarFolder: Option[File] = getAppJar.map {
     jar =>
+      import com.ee.utils.jar._
       val jarPath = jar.getAbsolutePath
-      import scala.sys.process._
-      "pwd".!
       Logger.debug(s"jar path: $jarPath")
+      def filter(s:String) = s.startsWith("public")
 
-      val destination = "target/universal/stage"
+      //Play.getFile("public").mkdir()
+      //Logger.trace(s"Created public folder: ${Play.getFile("public").getAbsolutePath}")
+      extractJar(jar, Play.getFile("."), filter)
+      /*val destination = "target/universal/stage"
 
       def currentDir = "pwd".!!.trim
+
+      Logger.debug(s"currentDir: $currentDir")
+
       val command =  s"jar xf $jarPath public"
 
       if( new File("public").exists ){
@@ -131,7 +149,7 @@ package object play {
         val out = new File(currentDir)
         Logger.debug(s"exploded folder: ${out.getAbsolutePath}")
         out
-      }
+      }*/
   }
 
 }

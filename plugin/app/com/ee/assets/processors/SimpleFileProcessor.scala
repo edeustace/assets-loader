@@ -7,7 +7,7 @@ import com.ee.assets.models.AssetsInfo
 import com.ee.assets.models.AssetsLoaderConfig
 import com.ee.log.Logger
 import com.ee.utils.play.Separator
-import com.ee.utils.file.{nameAndSuffix, readContents, writeToFile}
+import com.ee.utils.file.{nameAndSuffix, readContents, writeToFile, relativePath}
 import com.ee.utils.string._
 import java.io._
 
@@ -24,6 +24,8 @@ class SimpleFileProcessor(
 
   type ConcatenatedName = String
 
+
+  Logger.trace(s"assetsFolder: ${assetsFolder.getAbsolutePath}")
 
   /** Process the files
     * @param files - these files are in the static config folder as defined AssetsInfo.filePath
@@ -113,18 +115,6 @@ class SimpleFileProcessor(
   private def bufferedInputStream(file:File): InputStream = new BufferedInputStream(new FileInputStream(file))
 
   private def byteArrayStream(file:File) : ByteArrayInputStream = new ByteArrayInputStream(readContents(file).getBytes("UTF-8"))
-
-
-  private def relativePath(child: File, parent: File): String = {
-    val childFullPath = child.getCanonicalPath
-    val parentFullPath = parent.getCanonicalPath
-
-    if (childFullPath.startsWith(parentFullPath)) {
-      childFullPath.replace(parentFullPath, "")
-    } else {
-      throw new RuntimeException("Error getting relative path the child isn't actually a child: " + childFullPath + " parent: " + parentFullPath)
-    }
-  }
 
 
   private def concat(path: String, files: List[File])(implicit concatenatedName: ConcatenatedName): Option[List[File]] = if (config.concatenate) {
