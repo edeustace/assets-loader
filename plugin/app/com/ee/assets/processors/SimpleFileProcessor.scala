@@ -25,7 +25,8 @@ class SimpleFileProcessor(
   type ConcatenatedName = String
 
 
-  Logger.trace(s"assetsFolder: ${assetsFolder.getAbsolutePath}")
+  lazy val logger = Logger("SimpleFileProcessor")
+  logger.trace(s"assetsFolder: ${assetsFolder.getAbsolutePath}")
 
   /** Process the files
     * @param files - these files are in the static config folder as defined AssetsInfo.filePath
@@ -39,7 +40,7 @@ class SimpleFileProcessor(
     require(onlyRightType, "all files must be " + suffix + " files")
 
     implicit val concatenatedName: ConcatenatedName = prefix + "-" + hash(files) + suffix
-    Logger.debug("Concatentated name: " + concatenatedName)
+    logger.debug("Concatentated name: " + concatenatedName)
 
     val filesInTargetFolder = files.map(toFileInTargetFolder)
     processFileList(info.filePath, filesInTargetFolder)
@@ -54,11 +55,11 @@ class SimpleFileProcessor(
 
     val relative = relativePath(f, currentParent)
     val destination = makePath(assetsFolder, info.filePath, relative)
-    Logger.debug("target file: " + destination)
+    logger.debug("target file: " + destination)
 
     val targetFile = new File(destination)
     if (!targetFile.exists()) {
-      Logger.error("Error - the target file doesn't exist: " + destination)
+      logger.error("Error - the target file doesn't exist: " + destination)
     }
     targetFile
   }
@@ -80,23 +81,23 @@ class SimpleFileProcessor(
         files.map {
           f: File =>
 
-            Logger.debug("[processFileList] ->")
+            logger.debug("[processFileList] ->")
             val relative = relativePath(f, assetsFolder)
 
             def pointToLocalFile: String = {
-              Logger.debug("relative: " + relative)
+              logger.debug("relative: " + relative)
               val withWebPath = normalizeToUrl(relative)
               val normalizedWebPath = normalizeToUrl(withWebPath.replace(info.filePath, info.webPath))
-              Logger.debug("web path: " + normalizedWebPath)
+              logger.debug("web path: " + normalizedWebPath)
               scriptTag(normalizedWebPath)
             }
 
             def deployFile(d: Deployer): String = {
               val trimmed = normalizeToUrl(normalizeToUrl(relative).replace(info.filePath, ""))
 
-              Logger.debug("calling deploy with: " + trimmed)
+              logger.debug("calling deploy with: " + trimmed)
 
-              def stream : InputStream = if (config.gzip) bufferedInputStream(f) else byteArrayStream(f)
+              def stream: InputStream = if (config.gzip) bufferedInputStream(f) else byteArrayStream(f)
 
               d.deploy(trimmed, f.lastModified(), stream, ContentInfo(contentType, if (config.gzip) Some("gzip") else None)) match {
                 case Right(path) => scriptTag(path)
@@ -104,7 +105,7 @@ class SimpleFileProcessor(
               }
             }
 
-            if(config.deploy)
+            if (config.deploy)
               deployer.map(deployFile).getOrElse(pointToLocalFile)
             else
               pointToLocalFile
@@ -112,22 +113,22 @@ class SimpleFileProcessor(
     }.getOrElse(List())
   }
 
-  private def bufferedInputStream(file:File): InputStream = new BufferedInputStream(new FileInputStream(file))
+  private def bufferedInputStream(file: File): InputStream = new BufferedInputStream(new FileInputStream(file))
 
-  private def byteArrayStream(file:File) : ByteArrayInputStream = new ByteArrayInputStream(readContents(file).getBytes("UTF-8"))
+  private def byteArrayStream(file: File): ByteArrayInputStream = new ByteArrayInputStream(readContents(file).getBytes("UTF-8"))
 
 
   private def concat(path: String, files: List[File])(implicit concatenatedName: ConcatenatedName): Option[List[File]] = if (config.concatenate) {
 
     val destination = makePath(assetsFolder, info.filePath, concatenatedName)
 
-    Logger.debug("[concat] -> destination: " + destination)
+    logger.debug("[concat] -> destination: " + destination)
 
     if (!(new File(destination).exists)) {
       concatFiles(files, destination)
     }
     else {
-      Logger.debug("[concat] file already exists: " + new File(destination).getAbsolutePath)
+      logger.debug("[concat] file already exists: " + new File(destination).getAbsolutePath)
     }
     Some(List(new File(destination)))
   } else {
@@ -153,10 +154,10 @@ class SimpleFileProcessor(
         val destination = f.getAbsolutePath.replace(f.getName, processedName)
 
         if (!(new File(destination).exists)) {
-          Logger.debug("[processFilesInList] File doesn't exist -> processing now...")
+          logger.debug("[processFilesInList] File doesn't exist -> processing now...")
           process(f, destination)
         } else {
-          Logger.debug("[processFilesInList] File exists - return this file - don't process")
+          logger.debug("[processFilesInList] File exists - return this file - don't process")
         }
         new File(destination)
     }
@@ -165,16 +166,16 @@ class SimpleFileProcessor(
 
 
   private def concatFiles(files: List[File], destination: String) {
-    Logger.debug("[concatFiles] destination: " + destination)
-    Logger.debug("[concatFiles] files: " + files)
+    logger.debug("[concatFiles] destination: " + destination)
+    logger.debug("[concatFiles] files: " + files)
     val fileNames = files.map(_.getName).mkString(", ")
     val contents = files.map(f => {
       try {
         readContents(f)
       } catch {
         case e: Throwable => {
-          Logger.error("An exception occurred reading contents from " + f.getName)
-          Logger.error(e.getMessage)
+          logger.error("An exception occurred reading contents from " + f.getName)
+          logger.error(e.getMessage)
           throw new AssetsLoaderException("concatFiles: " + fileNames, e)
         }
       }
@@ -184,7 +185,7 @@ class SimpleFileProcessor(
       writeToFile(destination, contents)
     } catch {
       case e: Throwable => {
-        Logger.error("An exception occurred concatenating: " + fileNames)
+        logger.error("An exception occurred concatenating: " + fileNames)
         throw new AssetsLoaderException("concatFiles: " + fileNames, e)
       }
     }
@@ -192,12 +193,12 @@ class SimpleFileProcessor(
 
 
   private def gzipFile(file: File, destination: String) {
-    Logger.debug("[gzipFile] " + file + " destination: " + destination)
+    logger.debug("[gzipFile] " + file + " destination: " + destination)
     val contents = readContents(file)
     com.ee.utils.gzip.gzip(contents, destination)
   }
 
-  def normalizeToUrl(s: String): String = s.replace("\\","/").replace("/./", "/").replace("//", "/")
+  def normalizeToUrl(s: String): String = s.replace("\\", "/").replace("/./", "/").replace("//", "/")
 
   private def scriptTag(url: String): String = interpolate(srcTemplate, ("src", url))
 
@@ -205,11 +206,11 @@ class SimpleFileProcessor(
 
   private def trimLast_/(raw: String): String = if (raw.endsWith("/")) raw.substring(0, raw.length - 1) else raw
 
-  private def trimSeparator(path:String) : String =  (trim_/ _ andThen trimLast_/ _)(path)
+  private def trimSeparator(path: String): String = (trim_/ _ andThen trimLast_/ _)(path)
 
-  private def makePath(f : File, s: String*): String = {
+  private def makePath(f: File, s: String*): String = {
     val trimmed = s.map(trimSeparator)
-    new File( f.getPath + Separator + trimmed.mkString(Separator)).getPath
+    new File(f.getPath + Separator + trimmed.mkString(Separator)).getPath
   }
 
 }

@@ -36,6 +36,8 @@ object Loader{
  */
 class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Configuration, closureCompilerOptions : Option[CompilerOptions] = None) {
 
+  lazy val logger = Logger("Loader")
+
   private val jsProcessor: AssetProcessor =
     new SimpleFileProcessor(Info, JsConfig, assetsFolder, Loader.ScriptTemplate, ".js", minifyJs, loaderHash, deployer)
 
@@ -53,7 +55,7 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
       import Play.current
 
       val pathsAsFiles: List[File] = paths.map(p => Play.getFile( s".${Info.filePath}${File.separator}$p") ).toList
-      Logger.trace(s"paths: $pathsAsFiles")
+      logger.trace(s"paths: $pathsAsFiles")
       val allFiles = distinctFiles(pathsAsFiles: _*)
       val typedFiles = typeFilter(processor.suffix, allFiles)
       val assets = processor.process(concatPrefix, typedFiles)
@@ -65,7 +67,7 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
   }
 
   def minifyCss(file: File, destination: String) {
-    Logger.debug( s"[minifyCss]  $file destination: $destination")
+    logger.debug( s"[minifyCss]  $file destination: $destination")
     val contents = readContents(file)
     val compressor = new com.yahoo.platform.yui.compressor.CssCompressor(new StringReader(contents))
     val writer = new StringWriter()
@@ -74,7 +76,7 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
   }
 
   def minifyJs(file: File, destination: String) {
-    Logger.debug( s"[minifyJs]  $file  destination: $destination")
+    logger.debug( s"[minifyJs]  $file  destination: $destination")
     val contents = readContents(file)
     val out = JavascriptCompiler.minify(contents, None, closureCompilerOptions)
     writeToFile(destination, out)
@@ -89,7 +91,6 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
     val fileToStringFn : (File => String) = mode match{
       case Mode.Prod => {
         (f : File )=> {
-          Logger.debug("return simple file name for Production mode")
           f.getName
         }
       }

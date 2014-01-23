@@ -6,10 +6,10 @@
     </appender>
 
     <logger name="play" level="ERROR" />
-    <logger name="application" level="INFO" />
-    <logger name="assets.loader" level="DEBUG" />
+    <logger name="application" level="OFF" />
+    <logger name="assets.loader" level="TRACE" />
 
-    <root level="ERROR">
+    <root level="WARN">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

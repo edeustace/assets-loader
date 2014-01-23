@@ -18,9 +18,16 @@ object Dependencies{
 
   val grizzled = "org.clapper" % "grizzled-scala_2.10" % "1.1.4"
 
+  val specs2 = "org.specs2" %% "specs2" % "2.3.7"
+  val commonsIo = "commons-io" % "commons-io" % "2.4"
+
+  def provided(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "provided")
+}
+
+object Resolvers {
+
   val scalaTools =  "scala-tools" at "http://scala-tools.org/repo-releases/"
   val scalaToolsSnapshots =  "scala-tools-snapshots" at "http://scala-tools.org/repo-snapshots/"
   val commonResolvers = Seq(scalaTools, scalaToolsSnapshots)
 
-  def provided(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "provided")
 }

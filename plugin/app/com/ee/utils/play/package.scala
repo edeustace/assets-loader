@@ -3,11 +3,13 @@ package com.ee.utils
 import _root_.play.api.Play
 import _root_.play.api.Play.current
 import java.io._
-import com.ee.log.Logger
 import com.ee.assets.exceptions.AssetsLoaderException
 import java.util.jar.{JarEntry, JarFile}
+import com.ee.log.Logger
 
 package object play {
+
+  lazy val logger = Logger("play")
 
   private var cachedAssetsFolder: File = null
 
@@ -16,24 +18,24 @@ package object play {
   def assetsFolder(): File = {
     if (cachedAssetsFolder == null) {
       cachedAssetsFolder = initAssetsFolder
-      Logger.debug(s"[assetsFolder] folder is initialized to: ${cachedAssetsFolder.getAbsolutePath}")
+      logger.debug(s"[assetsFolder] folder is initialized to: ${cachedAssetsFolder.getAbsolutePath}")
     }
     cachedAssetsFolder
   }
 
   private def initAssetsFolder: File = {
 
-    Logger.trace(s"App root: ${Play.getFile(".")}")
+    logger.trace(s"App root: ${Play.getFile(".")}")
 
     if( Play.getFile("lib").exists){
-      Logger.debug("This is a dist/stage structure: initialising exploded jar...")
+      logger.debug("This is a dist/stage structure: initialising exploded jar...")
       explodedJarFolder
     } else if (Play.getFile("target/universal").exists) {
-      Logger.debug("This is a stage structure: initialising exploded jar...")
+      logger.debug("This is a stage structure: initialising exploded jar...")
       explodedJarFolder
     } else {
-      Logger.debug("initialising classes folder...")
-      Logger.trace(s"folder: $classesFolder")
+      logger.debug("initialising classes folder...")
+      logger.trace(s"folder: $classesFolder")
       classesFolder
     }
   }.getOrElse(throw new AssetsLoaderException("Error can't find a class folder or exploded jar folder"))
@@ -47,7 +49,7 @@ package object play {
     } else {
       target.listFiles.toList.find(_.getName.startsWith("scala-")) match {
         case Some(scalaFolder) => {
-          Logger.debug(s"found ${scalaFolder.getName}")
+          logger.debug(s"found ${scalaFolder.getName}")
           val path = List(target.getName, scalaFolder.getName, "classes").mkString(Separator)
           val file: File = new File(path)
           if (file.exists) {
@@ -68,13 +70,13 @@ package object play {
     def loadFromScriptName: Option[File] = {
       val binFolder: File = Play.current.getFile("bin")
       val libFolder: File = Play.current.getFile("lib")
-      Logger.debug(s"using bin folder: ${binFolder.getAbsolutePath}")
-      Logger.debug(s"using lib folder: ${libFolder.getAbsolutePath}")
+      logger.debug(s"using bin folder: ${binFolder.getAbsolutePath}")
+      logger.debug(s"using lib folder: ${libFolder.getAbsolutePath}")
 
       val scriptFile = binFolder.listFiles().filterNot(_.getName.endsWith(".bat")).headOption
-      Logger.trace(s"scriptFile: ${scriptFile.map(_.getName).getOrElse("doesn't exist")} ")
+      logger.trace(s"scriptFile: ${scriptFile.map(_.getName).getOrElse("doesn't exist")} ")
       val jars = libFolder.listFiles()
-      Logger.trace(s"jars: ${jars.mkString("\n")} ")
+      logger.trace(s"jars: ${jars.mkString("\n")} ")
 
 
       for {
@@ -90,7 +92,7 @@ package object play {
 
     val configuredJarfile = Play.current.configuration.getString("assetsLoader.prod.jarfile")
 
-    Logger.debug(s"Configured jar file: $configuredJarfile")
+    logger.debug(s"Configured jar file: $configuredJarfile")
 
     configuredJarfile.map {
       f =>
@@ -109,7 +111,7 @@ package object play {
     jar =>
       import com.ee.utils.jar._
       val jarPath = jar.getAbsolutePath
-      Logger.debug(s"jar path: $jarPath")
+      logger.debug(s"jar path: $jarPath")
       def filter(s:String) = s.startsWith("public")
       extractJar(jar, Play.getFile("."), filter)
   }
