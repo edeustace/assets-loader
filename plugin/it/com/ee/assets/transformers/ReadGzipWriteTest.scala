@@ -16,9 +16,9 @@ class ReadGzipWriteTest extends Specification with BaseIntegration {
 
       val write = new ElementWriter(writeFn(outDir))
 
-      val gzip = new GzipperWriter(p => new File(makePath(outDir, p)))
+      val gzipWriter = new GzipperWriter(p => new File(makePath(outDir, p)))
 
-      val sequence = new TransformationSequence(read, gzip, write)
+      val sequence = new TransformationSequence(read, gzipWriter)
 
       val elements = Seq(
         Element(makePath(pkg, "js-files", "one.js"))
