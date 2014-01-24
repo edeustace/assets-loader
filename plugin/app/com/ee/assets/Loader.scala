@@ -3,16 +3,14 @@ package com.ee.assets
 import com.ee.assets.deployment.Deployer
 import com.ee.assets.exceptions.AssetsLoaderException
 import com.ee.assets.models.{Suffix, AssetsLoaderConfig, AssetsInfo}
+import com.ee.assets.paths.PathResolver
 import com.ee.assets.transformers._
 import com.ee.log.Logger
-import com.ee.utils.jar
 import com.google.javascript.jscomp.CompilerOptions
 import java.io.File
-import java.net.{URLDecoder, URL}
-import java.util.jar.JarFile
+import java.net.URL
 import play.api.templates.Html
 import play.api.{Play, Configuration, Mode}
-import com.ee.assets.paths.PathResolver
 
 class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configuration, closureCompilerOptions: Option[CompilerOptions] = None) {
 
