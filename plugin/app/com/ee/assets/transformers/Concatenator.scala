@@ -8,9 +8,7 @@ class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Trans
 
   override def run(elements: Seq[Element]): Seq[Element] = {
 
-    logger.trace( s"run: $elements")
-
-    Seq.empty
+    logger.trace( s"run: ${elements.map(_.path).mkString(",")}")
 
     val builder = new StringBuilder("")
 

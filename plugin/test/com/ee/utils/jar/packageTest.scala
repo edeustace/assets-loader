@@ -3,12 +3,13 @@ package com.ee.utils.jar
 import org.specs2.mutable.{BeforeAfter, Specification}
 import java.io.File
 import com.ee.utils.file.{recursiveListFiles, relativePath}
+import java.util.jar.JarFile
 
 class jarPackageTest extends Specification {
 
   sequential
 
-  class  jartest(val jarContentsPath : String, val outputDirPath:String) extends BeforeAfter {
+  class jartest(val jarContentsPath : String, val outputDirPath:String) extends BeforeAfter {
 
     lazy val jarDir = new File(jarContentsPath)
 
@@ -49,6 +50,23 @@ class jarPackageTest extends Specification {
         println(f)
         new File( s"$outputDirPath/$f").exists === true
       }
+    }
+  }
+
+  "list children" should {
+
+    "work" in new jartest("test/com/ee/utils/jar/jarOne", "target/tmpJarFolder") {
+
+      val out = listChildrenInJar(new JarFile(jarPath), p => true)
+      out === List("public/", "public/nested/", "public/nested/public.txt", "public/public.txt", "test.txt")
+    }
+
+    "filter should work" in new jartest("test/com/ee/utils/jar/jarOne", "target/tmpJarFolder") {
+
+      def folders(p:String) = p.endsWith("/")
+      val noFolders = (folders(_:String) == false)
+      val out = listChildrenInJar(new JarFile(jarPath), noFolders)
+      out === Seq("public/nested/public.txt", "public/public.txt", "test.txt")
     }
   }
 

@@ -5,10 +5,10 @@
 <html>
     <head>
         <title>@title</title>
-        views.Helper.loader.css("example")( "stylesheets" )
-        views.Helper.loader.scripts("example")( "javascripts/example" )
+        @views.Helper.loader.css("example")( "stylesheets" )
+        @views.Helper.loader.scripts("example")( "javascripts/example" )
     </head>
     <body>
-        @views.Helper.listFiles( "public" )
+      @content
     </body>
 </html>

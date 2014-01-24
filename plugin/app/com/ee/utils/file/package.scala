@@ -7,9 +7,36 @@ import java.io.FileWriter
 package object file {
 
   lazy val logger = Logger("file")
-  def writeToFile(path: String, contents: String, mkDir : Boolean = true): File = {
 
-    if(mkDir){
+  def commonRootFolder(paths: String*): String = {
+
+    def buildCommon(a: Seq[String], b: Seq[String]) = {
+      val intersection = a.intersect(b)
+      if (a.startsWith(intersection) && b.startsWith(intersection)) {
+        intersection
+      } else {
+        Seq.empty
+      }
+    }
+
+    val prepped : Seq[Seq[String]] = paths.toSeq.map(_.split("/").toSeq)
+
+    prepped match {
+      case Nil => ""
+      case Seq(head) =>  head.mkString("/")
+      case Seq(head, xs @ _*) => {
+        val out: Seq[String] = xs.foldLeft(head) {
+          (guess, current) =>
+            buildCommon(guess, current)
+        }
+        out.mkString("/")
+      }
+    }
+  }
+
+  def writeToFile(path: String, contents: String, mkDir: Boolean = true): File = {
+
+    if (mkDir) {
       val dirPath = path.split(File.separator).dropRight(1).mkString(File.separator)
       new File(dirPath).mkdirs()
     }
