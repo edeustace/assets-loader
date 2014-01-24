@@ -2,6 +2,7 @@ package com.ee.utils
 
 import java.io.{FileOutputStream, InputStream, File}
 import java.util.jar.{JarEntry, JarFile}
+import java.net.URL
 
 package object jar {
 
@@ -41,4 +42,7 @@ package object jar {
     destDir
   }
 
+  def getAllChildrenFromJar(url:URL) : Seq[(String,String)] = {
+
+  }
 }

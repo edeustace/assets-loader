@@ -17,6 +17,7 @@ object Build extends sbt.Build {
     Keys.parallelExecution in IntegrationTest := false,
     Keys.fork in IntegrationTest := false,
     libraryDependencies += specs2 % "it,test",
+    libraryDependencies += "com.typesafe.play" %% "play-test" % "2.2.1" % "it,test",
     testOptions in IntegrationTest += Tests.Setup(() => println("Setup Integration Test")),
     testOptions in IntegrationTest += Tests.Cleanup(() => println("Cleanup Integration Test"))
   )
