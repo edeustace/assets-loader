@@ -19,7 +19,7 @@ class SimpleFileProcessor(
                            val suffix: String,
                            minify: (File, String) => Unit,
                            hash: List[File] => String,
-                           deployer: Option[Deployer]) extends AssetProcessor {
+                           deployer: Option[Deployer] ) extends AssetProcessor {
 
 
   type ConcatenatedName = String

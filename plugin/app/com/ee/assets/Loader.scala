@@ -10,6 +10,7 @@ import com.ee.utils.string._
 import java.io.{StringWriter, StringReader, File}
 import play.api.{Play, Configuration, Mode}
 import play.api.templates.Html
+import scala.collection.mutable
 import com.google.javascript.jscomp.CompilerOptions
 
 object Loader{
@@ -28,6 +29,15 @@ object Loader{
     """.stripMargin
 }
 
+object ProcessedCache {
+
+
+  val js : mutable.Map[Int,Html] = mutable.Map()
+
+  val css : mutable.Map[Int,Html] = mutable.Map()
+
+}
+
 /**
  * @param deployer
  * @param mode
@@ -42,25 +52,43 @@ class Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Config
   private val cssProcessor: AssetProcessor =
     new SimpleFileProcessor(Info, CssConfig, assetsFolder, Loader.CssTemplate, ".css", minifyCss, loaderHash, deployer)
 
-  def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = run(jsProcessor, concatPrefix)(paths: _*)
+  def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = run(jsProcessor, concatPrefix, ProcessedCache.js)(paths: _*)
 
-  def css(concatPrefix: String)(paths: String*): play.api.templates.Html = run(cssProcessor, concatPrefix)(paths: _*)
+  def css(concatPrefix: String)(paths: String*): play.api.templates.Html = run(cssProcessor, concatPrefix, ProcessedCache.css)(paths: _*)
 
-  private def run(processor: AssetProcessor, concatPrefix: String)(paths: String*): play.api.templates.Html = {
-    if (paths.length == 0) {
-      Html("<!-- AssetLoader :: error : no paths to load -->")
-    } else {
-      import Play.current
+  private def run(processor: AssetProcessor, concatPrefix: String, cache : mutable.Map[Int,Html])(paths: String*): play.api.templates.Html = {
 
-      val pathsAsFiles: List[File] = paths.map(p => Play.getFile( s".${Info.filePath}${File.separator}$p") ).toList
-      Logger.trace(s"paths: $pathsAsFiles")
-      val allFiles = distinctFiles(pathsAsFiles: _*)
-      val typedFiles = typeFilter(processor.suffix, allFiles)
-      val assets = processor.process(concatPrefix, typedFiles)
-      val out = interpolate(Loader.AssetLoaderTemplate,
-        "content" -> assets.mkString("\n"),
-        "files" -> typedFiles.map(_.getName).mkString("\n\t"))
-      Html(out)
+    def invokeProcessor = {
+
+      if (paths.length == 0) {
+        Html("<!-- AssetLoader :: error : no paths to load -->")
+      } else {
+        import Play.current
+
+        val pathsAsFiles: List[File] = paths.map(p => Play.getFile( s".${Info.filePath}${File.separator}$p") ).toList
+        Logger.trace(s"paths: $pathsAsFiles")
+        val allFiles = distinctFiles(pathsAsFiles: _*)
+        val typedFiles = typeFilter(processor.suffix, allFiles)
+        val assets = processor.process(concatPrefix, typedFiles)
+        val out = interpolate(Loader.AssetLoaderTemplate,
+          "content" -> assets.mkString("\n"),
+          "files" -> typedFiles.map(_.getName).mkString("\n\t"))
+        Html(out)
+      }
+    }
+
+    val key = s"$concatPrefix-${paths.sortWith( _ < _)}".hashCode
+
+    cache.get(key) match {
+      case Some(html) => {
+        Logger.info(s"Found cached result for: $concatPrefix, $paths")
+        html
+      } 
+      case None => {
+        val html = invokeProcessor
+        cache.put(key,html)
+        html 
+      }
     }
   }
 
