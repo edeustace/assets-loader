@@ -20,6 +20,8 @@ class FileToWebPath(info: AssetsInfo) extends Transformer {
     if (!p.contains(info.filePath)) {
       logger.warn(s"$p doesn't contain ${info.filePath} - so nothing to replace")
     }
-    p.replace(info.filePath, info.webPath)
+    val out = p.replace(info.filePath, info.webPath)
+
+    if(out.startsWith("/")) out else s"/$out"
   }
 }

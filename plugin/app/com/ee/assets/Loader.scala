@@ -12,6 +12,7 @@ import java.net.{URLDecoder, URL}
 import java.util.jar.JarFile
 import play.api.templates.Html
 import play.api.{Play, Configuration, Mode}
+import com.ee.assets.paths.PathResolver
 
 class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configuration, closureCompilerOptions: Option[CompilerOptions] = None) {
 
@@ -89,15 +90,18 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
     val tags = transformed.map(e => tagFn(e.path))
 
     val out = s"""
-      ${mainTemplate(transformed.map(_.path).mkString("\n"), tags.mkString("\n"))}
       <!--
-      Elements raw
+      Request:
+      --------
+      ${paths.mkString("\n")}
+
+      Elements raw:
       -----------------
       ${elements.map(_.path).mkString("\n")}
-      Elements processed
-      ------------------
-      ${transformed.map(_.path).mkString("\n")}
+
       -->
+      <!-- tags -->
+      ${mainTemplate(transformed.map(_.path).mkString("\n"), tags.mkString("\n"))}
     """
     Html(out)
   }
@@ -117,15 +121,20 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
     val read = new PlayResourceReader
     val namer = new CommonRootNamer(concatPrefix, suffix)
     val concat = new Concatenator(namer)
-    val write = new Writer(writeToGeneratedFolder)
-    val gzipWrite = new GzipperWriter(pathToFile)
     val toWebPath = new FileToWebPath(Info)
+    val write = if (!config.concatenate && !config.minify && !config.gzip) {
+      None
+    } else {
+      if (config.gzip) Some(new GzipperWriter(pathToFile))
+      else
+        Some(new Writer(writeToGeneratedFolder))
+    }
 
     Seq(
       Some(read),
       if (config.concatenate) Some(concat) else None,
       if (config.minify) Some(minify) else None,
-      if (config.gzip) Some(gzipWrite) else Some(write),
+      write,
       Some(toWebPath)
     ).flatten
   }
@@ -141,70 +150,22 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
 
 
   private def toElements(filter: String => Boolean)(paths: String*): Seq[Element] = {
+
     import play.api.Play.current
     logger.debug(s"[toElements]: $paths")
     def publicDir(p: String) = s"${Info.filePath}/$p"
     paths.map {
       p =>
-        Play.resource(publicDir(p)).map {
-          url => url.getProtocol match {
-            case "jar" => listAllChildrenFromJar(filter)(url)
-            case "file" => {
-              val absolutePathElements = listAllChildrenFromFolder(filter)(url)
 
-              def trimPath(elementPath: String): String = {
-                logger.trace(s"[trimPaths]: $elementPath, root: $p, url: ${url.getPath}, ${url.getFile}")
-                val publicPathIndex = elementPath.indexOf(publicDir(p))
-                elementPath.substring(publicPathIndex)
-              }
-              absolutePathElements.map {
-                e =>
-                  e.copy(trimPath(e.path))
-              }
-            }
-            case _ => throw new AssetsLoaderException(s"unknown file protocol: ${url.getProtocol} ")
-          }
-        }.getOrElse {
-          logger.warn(s"no resource for: $p")
-          Seq()
+        def toUrl(p: String): URL = Play.resource(p).getOrElse {
+          throw new AssetsLoaderException(s"[toElements] can't load path: $p")
         }
+
+        val paths = PathResolver.resolve(publicDir(p), toUrl)
+        val filtered = paths.filter(filter)
+        logger.trace(s"[toElements]: \n${filtered.mkString("\n")}")
+        filtered.map(Element(_))
     }.flatten
   }
-
-  private def listAllChildrenFromJar(fileTypeFilter: String => Boolean)(url: URL): Seq[Element] = {
-    logger.trace(s"[listAllChildrenFromJar] url: $url")
-    val jarPath = url.getPath().substring(5, url.getPath().indexOf("!"))
-
-    require(url.getFile.contains("!/"))
-
-    val filePath = url.getFile.split("!/")(1)
-    logger.trace(s"[listAllChildrenFromJar] path: $filePath")
-    val jarFile = new JarFile(URLDecoder.decode(jarPath, "UTF-8"))
-
-    def folders(p: String) = p.endsWith("/")
-    val noFolders = (folders(_: String) == false)
-    def startsWith(p: String) = p.startsWith(filePath)
-    def finalFilter(p: String) = startsWith(p) && noFolders(p) && fileTypeFilter(p)
-
-    jar.listChildrenInJar(jarFile, finalFilter).map {
-      Element(_, None)
-    }
-  }
-
-
-  private def listAllChildrenFromFolder(fileTypeFilter: String => Boolean)(url: URL): Seq[Element] = {
-    logger.trace(s"[listAllChildrenFromFolder] : $url")
-    val root = new File(url.getPath)
-    import com.ee.utils.file.distinctFiles
-    val allFiles = distinctFiles(root)
-    def isFile(f: File) = f.isFile
-    def finalFn(f: File) = isFile(f) && fileTypeFilter(f.getName)
-
-    allFiles.filter(finalFn).map {
-      f => {
-        logger.trace(s"file path: ${f.getPath}")
-        Element(f.getPath)
-      }
-    }
-  }
 }
+
