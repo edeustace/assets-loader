@@ -16,11 +16,11 @@ package object gzip {
 
     for( line <- data)
     {
-      writer.append(line);
-      writer.newLine();
+      writer.append(line)
+      writer.newLine()
     }
 
-    writer.close();
+    writer.close()
     new File(filePath)
   }
 }

@@ -20,10 +20,13 @@ package object models {
   private[assets] case class AssetsLoaderConfig(concatenate: Boolean, minify: Boolean, gzip: Boolean, deploy: Boolean)
 
   object AssetsLoaderConfig {
+
+    lazy val logger = Logger("config")
+
     def fromAppConfiguration(mode: String, suffix: Suffix.Suffix, configuration: Configuration): AssetsLoaderConfig = {
 
-      Logger.debug("creating config for: %s, %s".format(mode, suffix))
-      Logger.debug(configuration.getConfig("assetsLoader").map(_.toString).getOrElse("Can't find config for assetsLoader"))
+      logger.debug("creating config for: %s, %s".format(mode, suffix))
+      logger.trace(configuration.getConfig("assetsLoader").map(_.toString).getOrElse("Can't find config for assetsLoader"))
 
       val config = for {
         al <- configuration.getConfig("assetsLoader")
@@ -36,7 +39,7 @@ package object models {
       implicit def toBoolean(property: String): Boolean = {
         config.map {
           c =>
-            Logger.debug("%s: %s".format(property, c.getBoolean(property)))
+            logger.trace("%s: %s".format(property, c.getBoolean(property)))
             c.getBoolean(property).getOrElse(false)
         }.getOrElse(false)
       }

@@ -6,7 +6,41 @@ import java.io.FileWriter
 
 package object file {
 
-  def writeToFile(path: String, contents: String): File = {
+  lazy val logger = Logger("file")
+
+  def commonRootFolder(paths: String*): String = {
+
+    def buildCommon(a: Seq[String], b: Seq[String]) = {
+      val intersection = a.intersect(b)
+      if (a.startsWith(intersection) && b.startsWith(intersection)) {
+        intersection
+      } else {
+        Seq.empty
+      }
+    }
+
+    val prepped : Seq[Seq[String]] = paths.toSeq.map(_.split("/").toSeq)
+
+    prepped match {
+      case Nil => ""
+      case Seq(head) =>  head.mkString("/")
+      case Seq(head, xs @ _*) => {
+        val out: Seq[String] = xs.foldLeft(head) {
+          (guess, current) =>
+            buildCommon(guess, current)
+        }
+        out.mkString("/")
+      }
+    }
+  }
+
+  def writeToFile(path: String, contents: String, mkDir: Boolean = true): File = {
+
+    if (mkDir) {
+      val dirPath = path.split(File.separator).dropRight(1).mkString(File.separator)
+      new File(dirPath).mkdirs()
+    }
+
     val fw = new FileWriter(path)
     fw.write(contents)
     fw.close()
@@ -16,7 +50,7 @@ package object file {
 
   def readContents(f: File): String = {
 
-    Logger.debug("file.readContents: " + f.getName)
+    logger.debug("file.readContents: " + f.getName)
     if (f.exists) {
       val source = scala.io.Source.fromFile(f)(io.Codec("UTF-8"))
       val lines = source.mkString
@@ -30,7 +64,7 @@ package object file {
 
   def recursiveListFiles(f: File): List[File] = f match {
     case doesntExist: File if !f.exists() => {
-      Logger.warn("file doesn't exist: " + f.getName)
+      logger.warn("file doesn't exist: " + f.getName)
       List()
     }
     case file: File if f.isFile => List(file)

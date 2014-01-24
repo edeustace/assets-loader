@@ -6,7 +6,7 @@ import java.util.jar.{JarEntry, JarFile}
 package object jar {
 
 
-  def extractJar(jarFile: File, destDir: File, filter: String => Boolean) : File = {
+  def extractJar(jarFile: File, destDir: File, filter: String => Boolean): File = {
     import collection.JavaConversions.enumerationAsScalaIterator
 
     require(destDir.exists(), s"[extractJar] The destination folder doesn't exist")
@@ -39,6 +39,21 @@ package object jar {
     } while (enum.hasNext)
 
     destDir
+  }
+
+  def listChildrenInJar(jar: JarFile, filter: String => Boolean): Seq[String] = {
+    import collection.JavaConversions.enumerationAsScalaIterator
+
+    val entries: Iterator[JarEntry] = jar.entries()
+    val out: Seq[String] = entries.foldLeft[Seq[String]](Seq()) {
+      (acc, entry) =>
+        if (filter(entry.getName)) {
+          acc :+ entry.getName
+        } else {
+          acc
+        }
+    }
+    out
   }
 
 }
