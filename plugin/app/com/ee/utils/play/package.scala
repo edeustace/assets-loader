@@ -110,7 +110,16 @@ package object play {
       import com.ee.utils.jar._
       val jarPath = jar.getAbsolutePath
       Logger.debug(s"jar path: $jarPath")
+      import grizzled.file.util
+
+      val publicFolder = Play.getFile("public")
+
+      if(publicFolder.exists){
+        util.deleteTree(publicFolder)
+      }
+      
       def filter(s:String) = s.startsWith("public")
+
       extractJar(jar, Play.getFile("."), filter)
   }
 
