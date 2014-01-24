@@ -93,10 +93,10 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
       <!--
       Elements raw
       -----------------
-      <div>${elements.map(_.path).mkString("<br/>")}</div>
+      ${elements.map(_.path).mkString("\n")}
       Elements processed
       ------------------
-      <div>${transformed.map(_.path).mkString("<br/>")}</div>
+      ${transformed.map(_.path).mkString("\n")}
       -->
     """
     Html(out)
