@@ -34,10 +34,7 @@ class GzipperWriter( fileFn : String => File) extends Transformer {
   def gzip(s: String, filePath: String): File = {
 
     val fileOut = fileFn(filePath)
-
-    val parent = fileOut.getPath.split(File.separator).dropRight(1).mkString(File.separator)
-
-    new File(parent).mkdirs()
+    fileOut.getParentFile.mkdirs()
 
     logger.debug(s"file: ${fileOut.getAbsolutePath}")
     fileOut.delete

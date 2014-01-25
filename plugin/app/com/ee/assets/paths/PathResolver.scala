@@ -14,18 +14,19 @@ object PathResolver {
     val url = toUrl(path)
     val paths = url.getProtocol match {
       case "jar" => jarPaths(url)
-      case "file" => filePaths(path,url)
+      case "file" => filePaths(path, url)
     }
-    paths.sortWith{ (a,b) =>
+    paths.sortWith {
+      (a, b) =>
 
-      val aSlashCount  = a.count(_ == '/')
-      val bSlashCount = b.count(_ == '/')
+        val aSlashCount = a.count(_ == '/')
+        val bSlashCount = b.count(_ == '/')
 
-      if(aSlashCount == bSlashCount){
-        a < b
-      } else {
-        aSlashCount < bSlashCount
-      }
+        if (aSlashCount == bSlashCount) {
+          a < b
+        } else {
+          aSlashCount < bSlashCount
+        }
     }
   }
 
@@ -44,7 +45,7 @@ object PathResolver {
     com.ee.utils.jar.listChildrenInJar(jarFile, finalFilter)
   }
 
-  private def filePaths(path:String, url: URL): Seq[String] = {
+  private def filePaths(path: String, url: URL): Seq[String] = {
     logger.trace(s"[listAllChildrenFromFolder] : $url")
     val root = new File(url.getPath)
     import com.ee.utils.file.distinctFiles
@@ -52,12 +53,19 @@ object PathResolver {
     def isFile(f: File) = f.isFile
     def finalFn(f: File) = isFile(f)
 
-    allFiles.filter(finalFn).map {
-      f => {
-        logger.trace(s"file path: ${f.getPath}")
-        val splitIndex = f.getPath.indexOf(path)
-        f.getPath.substring(splitIndex)
-      }
+    def backSlashToForwardSlash(p: String) = p.replaceAll("\\\\", "/")
+
+    def relativePath(p: String) = {
+      logger.trace(s"file path: $p")
+      val splitIndex = p.indexOf(path)
+      require(splitIndex != -1, s"$p doesn't contain $path")
+      p.substring(splitIndex)
     }
+
+    allFiles
+      .filter(finalFn)
+      .map(_.getPath)
+      .map(backSlashToForwardSlash)
+      .map(relativePath)
   }
 }

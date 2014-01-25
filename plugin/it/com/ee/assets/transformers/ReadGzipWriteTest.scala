@@ -26,10 +26,10 @@ class ReadGzipWriteTest extends Specification with BaseIntegration {
 
       sequence.run(elements)
 
-      readGzip(makePath(outDir, pkg, "js-files", "one.gz.js")) ===
+      readGzip(makePath(outDir, pkg, "js-files", "one.gz.js")).trim ===
         """var x = function(){
           |}
-          |""".stripMargin
+          |""".stripMargin.trim
     }
   }
 

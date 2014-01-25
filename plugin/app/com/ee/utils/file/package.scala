@@ -37,8 +37,9 @@ package object file {
   def writeToFile(path: String, contents: String, mkDir: Boolean = true): File = {
 
     if (mkDir) {
-      val dirPath = path.split(File.separator).dropRight(1).mkString(File.separator)
-      new File(dirPath).mkdirs()
+      new File(path).getParentFile().mkdirs
+      //val dirPath = path.split(File.separator).dropRight(1).mkString(File.separator)
+      //enw File(dirPath).mkdirs()
     }
 
     val fw = new FileWriter(path)

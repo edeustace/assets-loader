@@ -21,7 +21,7 @@ class jarPackageTest extends Specification {
     }
   }
 
-  "list children" should {
+  /*"list children" should {
 
     "work" in new JarContext("test/com/ee/utils/jar/jarOne", "target/tmpJarFolder") {
       val out = listChildrenInJar(new JarFile(jarPath), p => true)
@@ -34,6 +34,6 @@ class jarPackageTest extends Specification {
       val out = listChildrenInJar(new JarFile(jarPath), noFolders)
       out === Seq("public/nested/public.txt", "public/public.txt", "test.txt")
     }
-  }
+  }*/
 
 }
