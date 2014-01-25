@@ -1,6 +1,6 @@
 # assets-loader
 
-## Note: There is a critical bug with 11.4 - Please use 11.5-SNAPSHOT for now.
+### Note: Windows users use 11.6-SNAPSHOT for now
 
 A play plugin that concatenates, minifies and gzips your JS or Css.
 
