@@ -38,8 +38,6 @@ package object file {
 
     if (mkDir) {
       new File(path).getParentFile().mkdirs
-      //val dirPath = path.split(File.separator).dropRight(1).mkString(File.separator)
-      //enw File(dirPath).mkdirs()
     }
 
     val fw = new FileWriter(path)
