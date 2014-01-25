@@ -7,7 +7,7 @@ object ApplicationBuild extends Build {
   val appName         = "example-221"
   val appVersion      = "1.0-SNAPSHOT"
 
-  val assetsLoader = "com.ee" %% "assets-loader" % "0.11.6-SNAPSHOT"
+  val assetsLoader = "com.ee" %% "assets-loader" % "0.11.7-SNAPSHOT"
 
   val appDependencies = Seq(assetsLoader)
 

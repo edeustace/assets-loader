@@ -1,7 +1,5 @@
 # assets-loader
 
-### Note: Windows users use 11.6-SNAPSHOT for now
-
 A play plugin that concatenates, minifies and gzips your JS or Css.
 
 It will process the files depending on the configuration you provide
@@ -91,10 +89,10 @@ You can pass in your own closure compiler options when you are instantiating the
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.11.5"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.11.6"
       
       // snapshot version
-      //val assetsLoader = "com.ee" %% "assets-loader" % "0.11.6-SNAPSHOT"
+      //val assetsLoader = "com.ee" %% "assets-loader" % "0.11.7-SNAPSHOT"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"
