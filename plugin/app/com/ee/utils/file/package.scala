@@ -23,7 +23,7 @@ package object file {
 
     prepped match {
       case Nil => ""
-      case Seq(head) =>  head.mkString("/")
+      case Seq(head) =>  head.dropRight(1).mkString("/")
       case Seq(head, xs @ _*) => {
         val out: Seq[String] = xs.foldLeft(head) {
           (guess, current) =>

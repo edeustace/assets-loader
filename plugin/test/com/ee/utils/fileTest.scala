@@ -48,11 +48,17 @@ class fileTest extends Specification {
 
     "empty for empty args" in commonRootFolder() === ""
 
-    "return parent for single query" in commonRootFolder("a/b") == "a/b"
+    "return parent for single query" in commonRootFolder("a/b") == "a"
 
     "a/b" in commonRootFolder("a/b/c.txt", "a/b/c/d.txt") === "a/b"
 
     "empty for no common root" in commonRootFolder("z/b/c.txt", "a/b/c/d.txt") === ""
+
+    "parent" in commonRootFolder("a/a.txt") === "a"
+
+    "parent" in commonRootFolder("a/b.b/a.txt") === "a/b.b"
+
+    "parent" in commonRootFolder("a/b.b/a.txt", "a/b.b/c.c/t.txt") === "a/b.b"
 
     "n paths" in {
       commonRootFolder(
