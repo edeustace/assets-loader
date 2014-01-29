@@ -129,9 +129,6 @@ You can pass in your own closure compiler options when you are instantiating the
         concatenate: true
         minify: true
         gzip: true
-        # Optional: specify a jar from which to extract the 'public' assets folder.
-        # by default it'll use the main play app jar in the dist folder
-        # jarfile: "my-app.jar"
       }
     }
 
@@ -142,14 +139,6 @@ The default Assets controller in Play doesn't work with the loader because it on
 
 #### Logging
 If you want to see logs from asset loader - make sure you add a logger for 'assets-loader' to your log config.
-
-### Running production mode
-
-If you have a created a distributable app using `play stage`, the asset loader will to the following:
-
-If you have configured the name of the jarfile in the conf - it'll try and find that jar in the lib folder of your distribution. If it hasn't been configured it'll try to find the application jar file. It'll use the name of the start script as the basename of the jar to find.
-
-* Note: Running production mode on windows machines is not supported at the moment.
 
 ### Developing
 Clone the project and run `play`.
