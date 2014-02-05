@@ -4,13 +4,13 @@ import com.ee.js.JavascriptCompiler
 import com.google.javascript.jscomp.CompilerOptions
 import com.ee.log.Logger
 
-class JsMinifier(compilerOptions: Option[CompilerOptions] = None) extends Transformer {
+class JsMinifier(compilerOptions: Option[CompilerOptions] = None) extends Transformer[String,String] {
 
   val logger = Logger("js-minifier")
 
   private def minifyJs(contents: String): String = JavascriptCompiler.minify(contents, None, compilerOptions)
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
     elements.map {
       e =>
         e.contents.map {

@@ -3,15 +3,15 @@ package com.ee.assets.transformers
 import com.ee.assets.models.AssetsInfo
 import com.ee.log.Logger
 
-class FileToWebPath(info: AssetsInfo) extends Transformer {
+class FileToWebPath(info: AssetsInfo) extends Transformer[String,String] {
 
   lazy val logger = Logger("file-to-web")
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
     elements.map {
       e =>
-        e.copy(toWebPath(e.path), None)
+        Element[String](toWebPath(e.path), None)
     }
   }
 

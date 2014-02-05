@@ -2,10 +2,10 @@ package com.ee.assets.transformers
 
 import com.ee.log.Logger
 
-class ElementReader(read: String => Option[String]) extends Transformer {
+class ElementReader(read: String => Option[String]) extends Transformer[String,String] {
 
   val logger = Logger("ElementReader")
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
     logger.trace(s"run: $elements")
 
@@ -16,17 +16,17 @@ class ElementReader(read: String => Option[String]) extends Transformer {
   }
 }
 
-class ElementWriter(write: Element => String) extends Transformer {
+class ElementWriter(write: Element[String] => String) extends Transformer[String,String] {
 
   val logger = Logger("ElementWriter")
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
     logger.trace(s"run: $elements")
 
     elements.map {
       e =>
-        Element(write(e), None)
+        Element[String](write(e), None)
     }
   }
 }

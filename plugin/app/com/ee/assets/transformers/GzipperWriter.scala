@@ -10,11 +10,11 @@ import java.util.zip.GZIPOutputStream
  * to look at setting up a type system for the transformers for that.
  * @param fileFn
  */
-class GzipperWriter( fileFn : String => File) extends Transformer {
+class GzipperWriter( fileFn : String => File) extends Transformer[String,String] {
 
   lazy val logger = Logger("gzipper")
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
     elements.map {
       e =>
@@ -23,7 +23,7 @@ class GzipperWriter( fileFn : String => File) extends Transformer {
             val (name, suffix) = com.ee.utils.file.nameAndSuffix(e.path)
             val nameOut = s"$name.gz.$suffix"
             gzip(c, nameOut)
-            Element(nameOut, None)
+            Element[String](nameOut, None)
         }.getOrElse {
           logger.warn(s" ${e.path} has no contents")
           e

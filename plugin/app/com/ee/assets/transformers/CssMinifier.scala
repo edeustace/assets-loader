@@ -3,11 +3,11 @@ package com.ee.assets.transformers
 import java.io.{StringWriter, StringReader}
 import com.ee.log.Logger
 
-class CssMinifier extends Transformer {
+class CssMinifier extends Transformer[String,String] {
 
   lazy val logger = Logger("css-minifier")
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
     elements.map {
       e =>

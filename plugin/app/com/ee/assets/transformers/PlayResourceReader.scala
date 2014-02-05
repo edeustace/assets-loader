@@ -4,13 +4,13 @@ import com.ee.assets.exceptions.AssetsLoaderException
 import play.api.Play
 import com.ee.log.Logger
 
-class PlayResourceReader extends Transformer {
+class PlayResourceReader extends Transformer[String,String] {
 
   lazy val logger = Logger("play-resource-reader")
 
   import play.api.Play.current
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
     elements.map {
       e =>

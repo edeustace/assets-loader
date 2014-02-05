@@ -2,11 +2,11 @@ package com.ee.assets.transformers
 
 import com.ee.log.Logger
 
-class Writer(writeFn: (String, String) => Unit) extends Transformer {
+class Writer(writeFn: (String, String) => Unit) extends Transformer[String,String] {
 
   lazy val logger = Logger("writer")
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
 
     elements.map {
@@ -19,7 +19,7 @@ class Writer(writeFn: (String, String) => Unit) extends Transformer {
           logger.warn(s"Nothing to write for: ${e.path}")
         }
 
-        e.copy(contents = None)
+        Element[String](e.path, contents = None)
     }
   }
 }

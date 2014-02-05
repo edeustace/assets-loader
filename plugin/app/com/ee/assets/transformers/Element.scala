@@ -1,3 +1,3 @@
 package com.ee.assets.transformers
 
-case class Element(path:String, contents : Option[String] = None)
+case class Element[A](path:String, contents : Option[A] = None)
