@@ -16,7 +16,7 @@ class ReadConcatMinifyWriteTest extends Specification with BaseIntegration{
       val read = new ElementReader(readFn("it"))
 
       val concat = new Concatenator(new PathNamer {
-        override def name(elements: Seq[Element]): String = fileConcatted
+        override def name[A](elements: Seq[Element[A]]): String = fileConcatted
       })
 
       val minify = new JsMinifier()
@@ -25,9 +25,9 @@ class ReadConcatMinifyWriteTest extends Specification with BaseIntegration{
 
       val sequence = new TransformationSequence(read, concat, minify, write)
 
-      val elements = Seq(
-        Element(makePath(pkg, "js-files", "one.js")),
-        Element(makePath(pkg, "js-files", "two.js"))
+      val elements : Seq[Element[String]]= Seq(
+        Element[String](makePath(pkg, "js-files", "one.js")),
+        Element[String](makePath(pkg, "js-files", "two.js"))
       )
 
       sequence.run(elements)

@@ -15,16 +15,17 @@ class ReadConcatWriteTest extends Specification with BaseIntegration{
 
       val read = new ElementReader(readFn("it"))
       val concat = new Concatenator(new PathNamer {
-        override def name(elements: Seq[Element]): String = fileOut
+        override def name[A](elements: Seq[Element[A]]): String = fileOut
       })
       val write = new ElementWriter(writeFn("target"))
 
       val sequence = new TransformationSequence(read, concat, write)
 
       val elements = Seq(
-        Element(makePath(pkg, "files", "one.txt")),
-        Element(makePath(pkg, "files", "two.txt"))
+        Element[String](makePath(pkg, "files", "one.txt")),
+        Element[String](makePath(pkg, "files", "two.txt"))
       )
+
       sequence.run(elements)
 
       readFn("target")(fileOut).map {

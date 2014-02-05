@@ -6,27 +6,30 @@ import java.io._
 
 class ReadGzipWriteTest extends Specification with BaseIntegration {
 
-
   "Read,Gzip,Write" should {
 
     val outDir = makePath("target", "test-files", "gzip-files")
 
+    def fileFn(path:String) = {
+      val f = new File(makePath(outDir, path))
+      f.getParentFile.mkdirs()
+      f
+    }
+
     "work" in new cleanGenerated(outDir) {
       val read = new ElementReader(readFn("it"))
-
-      val write = new ElementWriter(writeFn(outDir))
-
-      val gzipWriter = new GzipperWriter(p => new File(makePath(outDir, p)))
-
-      val sequence = new TransformationSequence(read, gzipWriter)
+      val gzip = new Gzip()
+      val write = new ByteArrayWriter(fileFn)
 
       val elements = Seq(
-        Element(makePath(pkg, "js-files", "one.js"))
+        Element[String](makePath(pkg, "js-files", "one.js"))
       )
 
-      sequence.run(elements)
+      val combi = read.run _ andThen gzip.run _ andThen write.run _
 
-      readGzip(makePath(outDir, pkg, "js-files", "one.gz.js")).trim ===
+      val processed = combi(elements)
+
+      readGzip(processed(0).path).trim ===
         """var x = function(){
           |}
           |""".stripMargin.trim

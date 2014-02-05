@@ -40,7 +40,7 @@ trait BaseIntegration {
     }
   }
 
-  def writeFn(root: String)(e: Element): String = {
+  def writeFn(root: String)(e: Element[String]): String = {
 
     import com.ee.utils.file.writeToFile
 
