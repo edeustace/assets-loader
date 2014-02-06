@@ -36,6 +36,7 @@ class GzipWriteTest
 
     "work with flow" in new cleanGenerated(outDir) {
       val s = Some("console.log('blah');")
+      //TOD: allow: val combi = gzip _ andThen write _
       val combi = gzip.run _ andThen writer.run _
       val out = combi(Seq(Element("blah-two.js", s)))
       val readBytes: Array[Byte] = IOUtils.toByteArray(new FileInputStream(new File(out(0).path)))
