@@ -1,10 +1,12 @@
 package com.ee.assets.transformers
 
 import com.ee.assets.exceptions.AssetsLoaderException
-import play.api.Play
 import com.ee.log.Logger
+import java.io.File
+import java.net.JarURLConnection
+import play.api.Play
 
-class PlayResourceReader extends Transformer[String,String] {
+class PlayResourceReader extends Transformer[String, String] {
 
   lazy val logger = Logger("play-resource-reader")
 
@@ -19,13 +21,32 @@ class PlayResourceReader extends Transformer[String,String] {
         }
         import scala.io.Source
 
-        if (Play.resource(e.path).isEmpty) {
-          logger.warn(s"can't load path: ${e.path}")
+        val url = Play.resource(e.path)
+
+        val contents = url.map {
+          u =>
+            Source.fromInputStream(u.openStream).getLines.mkString("\n")
+        }.orElse {
+          val errorMsg = s"can't load path: ${e.path}"
+          throw new AssetsLoaderException(errorMsg)
         }
-        val contents = Play.resourceAsStream(e.path).map {
-          Source.fromInputStream(_).getLines.mkString("\n")
-        }
-        e.copy(contents = contents)
+
+        val lastModified: Option[Long] = url.map(maybeLastModified).flatten
+
+        e.copy(contents = contents, lastModified = lastModified)
     }
   }
+
+  def maybeLastModified(resource: java.net.URL): Option[Long] = {
+    resource.getProtocol match {
+      case "file" => Some(new File(resource.getPath).lastModified)
+      case "jar" => {
+        Option(resource.openConnection)
+          .map(_.asInstanceOf[JarURLConnection].getJarEntry.getTime)
+          .filterNot(_ == -1)
+      }
+      case _ => None
+    }
+  }
+
 }

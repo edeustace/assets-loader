@@ -1,7 +1,7 @@
 package com.ee.assets.transformers
 
 import java.io.File
-import org.specs2.mutable.Before
+import org.specs2.mutable.{Specification, Before}
 
 
 class cleanGenerated(generatedPath: String) extends Before {
@@ -9,15 +9,16 @@ class cleanGenerated(generatedPath: String) extends Before {
 
     val f = new File(generatedPath)
 
-    if(f.exists()){
+    if (f.exists && f.isDirectory) {
       println(s"deleting: $generatedPath")
       grizzled.file.util.deleteTree(new File(generatedPath))
     }
   }
 }
 
-trait BaseIntegration {
+trait BaseIntegration extends Specification {
 
+  sequential
 
   def pkg = {
     makePath(this.getClass.getPackage.getName.split("\\."): _*)
