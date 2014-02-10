@@ -4,7 +4,7 @@ import com.ee.assets.deployment.{ContentInfo, Deployer}
 import com.ee.log.Logger
 import java.io.{InputStream, ByteArrayInputStream}
 
-abstract class BaseDeploy[A](d: Deployer) extends Transformer[A, String] {
+abstract class BaseDeploy[A](d: Deployer) extends Transformer[A, Unit] {
 
   protected def logger: org.slf4j.Logger
 
@@ -12,23 +12,20 @@ abstract class BaseDeploy[A](d: Deployer) extends Transformer[A, String] {
 
   protected def encoding: Option[String]
 
-  override def run(elements: Seq[Element[A]]): Seq[Element[String]] = {
-    for {
-      e <- elements
-      c <- e.contents
-    } yield {
-      def contentType = if (e.path.endsWith(".js")) "text/javascript" else "text/css"
-
-      val is: InputStream = getInputStream(c)
-      d.deploy(e.path, e.lastModified.getOrElse(0), is, ContentInfo(contentType, encoding)) match {
-        case Right(p) => Some(Element[String](p, None))
-        case Left(err) => {
-          logger.warn(s"Error deploying: ${e.path}")
-          None
+  override def run(elements: Seq[Element[A]]): Seq[PathElement] = {
+    elements.map {
+      e =>
+        def contentType = if (e.path.endsWith(".js")) "text/javascript" else "text/css"
+        val is: InputStream = getInputStream(e.contents)
+        d.deploy(e.path, e.lastModified.getOrElse(0), is, ContentInfo(contentType, encoding)) match {
+          case Right(p) => Some(PathElement(p))
+          case Left(err) => {
+            logger.warn(s"Error deploying: ${e.path}")
+            None
+          }
         }
-      }
-    }
-  }.flatten
+    }.flatten
+  }
 }
 
 

@@ -11,7 +11,7 @@ class Gzip extends Transformer[String,Array[Byte]] {
         val (name, suffix) = com.ee.utils.file.nameAndSuffix(e.path)
         val dir = grizzled.file.util.dirname(e.path)
         val nameOut = if(dir == "." ) s"$name.gz.$suffix" else s"$dir/$name.gz.$suffix"
-        val out: Element[Array[Byte]] = Element[Array[Byte]](nameOut, e.contents.map((s: String) => gzipIt(s)))
+        val out: Element[Array[Byte]] = ContentElement[Array[Byte]](nameOut, gzipIt(e.contents), e.lastModified)
         out
     }
   }

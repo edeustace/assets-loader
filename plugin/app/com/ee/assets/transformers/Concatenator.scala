@@ -14,12 +14,20 @@ class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Trans
 
     elements.foreach {
       (e) =>
-        e.contents.map(builder.append)
+        builder.append(e.contents)
         builder.append(separator)
     }
+
     val concatName = pathNamer.name(elements)
     logger.debug(s"name: $concatName")
-    Seq(Element(concatName, Some(builder.toString())))
+    val lm = elements
+      .map(_.lastModified)
+      .flatten
+      .sorted
+      .reverse
+      .headOption
+
+    Seq(ContentElement(concatName, builder.toString, lm))
   }
 
 }

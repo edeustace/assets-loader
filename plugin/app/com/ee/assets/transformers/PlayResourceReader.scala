@@ -6,19 +6,16 @@ import java.io.File
 import java.net.JarURLConnection
 import play.api.Play
 
-class PlayResourceReader extends Transformer[String, String] {
+class PlayResourceReader extends Transformer[Unit, String] {
 
   lazy val logger = Logger("play-resource-reader")
 
   import play.api.Play.current
 
-  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
+  override def run(elements: Seq[Element[Unit]]): Seq[Element[String]] = {
 
     elements.map {
       e =>
-        if (e.contents.isDefined) {
-          throw new AssetsLoaderException(s"${e.path} already has contents")
-        }
         import scala.io.Source
 
         val url = Play.resource(e.path)
@@ -33,8 +30,10 @@ class PlayResourceReader extends Transformer[String, String] {
 
         val lastModified: Option[Long] = url.map(maybeLastModified).flatten
 
-        e.copy(contents = contents, lastModified = lastModified)
-    }
+        contents.map{ c =>
+          ContentElement[String](path = e.path, contents = c, lastModified = lastModified)
+        }
+    }.flatten
   }
 
   def maybeLastModified(resource: java.net.URL): Option[Long] = {

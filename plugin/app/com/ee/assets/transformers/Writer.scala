@@ -2,24 +2,15 @@ package com.ee.assets.transformers
 
 import com.ee.log.Logger
 
-class Writer(writeFn: (String, String) => Unit) extends Transformer[String,String] {
+class Writer(writeFn: (String, String) => Unit) extends Transformer[String, Unit] {
 
   lazy val logger = Logger("writer")
 
-  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
-
-
+  override def run(elements: Seq[Element[String]]): Seq[PathElement] = {
     elements.map {
       e =>
-
-        e.contents.map {
-          c =>
-            writeFn(e.path, c)
-        }.getOrElse {
-          logger.warn(s"Nothing to write for: ${e.path}")
-        }
-
-        Element[String](e.path, contents = None)
+        writeFn(e.path, e.contents)
+        PathElement(e.path)
     }
   }
 }
