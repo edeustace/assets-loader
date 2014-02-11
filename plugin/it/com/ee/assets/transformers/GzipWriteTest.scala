@@ -18,19 +18,14 @@ class GzipWriteTest
 
     val gzip = Gzip()
 
-    val write = ByteArrayWriter((p: String) => {
-      val f = new File(makePath(outDir, p))
-      f.getParentFile.mkdirs()
-      f
-    }
-    )
+    val write = ByteArrayWriter( resolveFileFn(outDir))
 
     "work" in new cleanGenerated(outDir) {
       val zipped = gzip(Seq(ContentElement("blah.js", s, None)))
       val written = write(zipped)
       written.length === 1
       written(0).path
-      val readBytes: Array[Byte] = IOUtils.toByteArray(new FileInputStream(new File(written(0).path)))
+      val readBytes: Array[Byte] = IOUtils.toByteArray(new FileInputStream(new File( s"$outDir${File.separator}${written(0).path}")))
       decompress(readBytes) === "alert('hello');"
     }
 
@@ -38,7 +33,7 @@ class GzipWriteTest
       val s = "console.log('blah');"
       val combi = gzip andThen write
       val out = combi(Seq(ContentElement("blah-two.js", s, None)))
-      val readBytes: Array[Byte] = IOUtils.toByteArray(new FileInputStream(new File(out(0).path)))
+      val readBytes: Array[Byte] = IOUtils.toByteArray(new FileInputStream(new File( s"$outDir${File.separator}${out(0).path}")))
       decompress(readBytes) === s
     }
   }

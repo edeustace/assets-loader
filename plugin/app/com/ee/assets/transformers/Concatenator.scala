@@ -23,13 +23,14 @@ class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Trans
     }
 
     val concatName = pathNamer.name(elements)
-    logger.debug(s"name: $concatName")
     val lm = elements
       .map(_.lastModified)
       .flatten
       .sorted
       .reverse
       .headOption
+
+    logger.trace(s"concatenated name: $concatName")
 
     Seq(ContentElement(concatName, builder.toString, lm))
   }

@@ -17,9 +17,10 @@ class ByteArrayWriter(fileFn: String => File) extends Transformer[Array[Byte], U
       e <- elements
     } yield {
       val fileOut = fileFn(e.path)
-      logger.trace(s"write bytes to ${fileOut.getPath}")
+      logger.trace(s"from ${e.path} write bytes to ${fileOut.getPath}")
+      fileOut.getParentFile.mkdirs()
       IOUtils.write(e.contents, new FileOutputStream(fileOut))
-      PathElement(fileOut.getCanonicalPath)
+      PathElement(e.path)
     }
   }
 }

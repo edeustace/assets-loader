@@ -8,7 +8,7 @@ trait PathNamer {
 
 class CommonRootNamer(prefix: String, suffix: String) extends PathNamer {
 
-  lazy val logger = Logger("path-namer")
+  lazy val logger = Logger("common-root-namer")
 
   override def name[A](elements: Seq[Element[A]]): String = {
     import com.ee.utils.file.commonRootFolder
@@ -17,6 +17,8 @@ class CommonRootNamer(prefix: String, suffix: String) extends PathNamer {
     val root = commonRootFolder(elements.map(_.path): _*)
     logger.trace(s"commonRootFolder: $root")
     val hash = elements.map(_.path).mkString(",").hashCode
-    s"${root}/$prefix-$hash.$suffix"
+    val out = s"${root}/$prefix-$hash.$suffix"
+    logger.trace(s"out: $out")
+    out
   }
 }

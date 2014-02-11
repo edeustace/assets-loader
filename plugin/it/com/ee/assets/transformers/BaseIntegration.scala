@@ -41,6 +41,8 @@ trait BaseIntegration extends Specification {
     }
   }
 
+  def resolveFileFn(root:String)(path:String) : File = new File(s"$root${File.separator}$path")
+
   def writeFn(root: String)(e: Element[String]): String = {
 
     import com.ee.utils.file.writeToFile

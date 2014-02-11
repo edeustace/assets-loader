@@ -29,7 +29,7 @@ class ReadGzipWriteTest extends Specification with BaseIntegration {
 
       val processed = combi(elements)
 
-      readGzip(processed(0).path).trim ===
+      readGzip( s"$outDir${File.separator}${processed(0).path}").trim ===
         """var x = function(){
           |}
           | """.stripMargin.trim
