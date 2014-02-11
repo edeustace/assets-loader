@@ -1,7 +1,7 @@
 package com.ee.assets.transformers
 
 import java.io.File
-import org.specs2.mutable.Before
+import org.specs2.mutable.{Specification, Before}
 
 
 class cleanGenerated(generatedPath: String) extends Before {
@@ -9,15 +9,16 @@ class cleanGenerated(generatedPath: String) extends Before {
 
     val f = new File(generatedPath)
 
-    if(f.exists()){
+    if (f.exists && f.isDirectory) {
       println(s"deleting: $generatedPath")
       grizzled.file.util.deleteTree(new File(generatedPath))
     }
   }
 }
 
-trait BaseIntegration {
+trait BaseIntegration extends Specification {
 
+  sequential
 
   def pkg = {
     makePath(this.getClass.getPackage.getName.split("\\."): _*)
@@ -25,7 +26,7 @@ trait BaseIntegration {
 
   def makePath(parts: String*) = parts.mkString(File.separator)
 
-  def readFn(root: String)(path: String): Option[String] = {
+  def readFn(root: String)(path: String): Option[Element[String]] = {
 
     val readPath = makePath(root, path)
 
@@ -33,23 +34,22 @@ trait BaseIntegration {
     val f = new File(readPath)
 
     if (f.exists) {
-      Some(scala.io.Source.fromFile(f).getLines.mkString("\n"))
+      Some(ContentElement(path, scala.io.Source.fromFile(f).getLines.mkString("\n"), None))
     } else {
       println(s"file: $f doesn't exist")
       None
     }
   }
 
-  def writeFn(root: String)(e: Element): String = {
+  def resolveFileFn(root:String)(path:String) : File = new File(s"$root${File.separator}$path")
+
+  def writeFn(root: String)(e: Element[String]): String = {
 
     import com.ee.utils.file.writeToFile
 
-    e.contents.foreach {
-      c =>
-        val path = makePath(root, e.path)
-        println(s"[writeFn] $path")
-        writeToFile(makePath(root, e.path), c)
-    }
+    val path = makePath(root, e.path)
+    println(s"[writeFn] $path")
+    writeToFile(makePath(root, e.path), e.contents)
     e.path
   }
 

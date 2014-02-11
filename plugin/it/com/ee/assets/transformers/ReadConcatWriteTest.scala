@@ -1,7 +1,7 @@
 package com.ee.assets.transformers
 
-import org.specs2.mutable.Specification
 import com.ee.log.Logger
+import org.specs2.mutable.Specification
 
 class ReadConcatWriteTest extends Specification with BaseIntegration{
 
@@ -13,23 +13,23 @@ class ReadConcatWriteTest extends Specification with BaseIntegration{
 
     "work" in {
 
-      val read = new ElementReader(readFn("it"))
-      val concat = new Concatenator(new PathNamer {
-        override def name(elements: Seq[Element]): String = fileOut
+      val read = ElementReader(readFn("it"))
+      val concat = Concatenator(new PathNamer {
+        override def name[A](elements: Seq[Element[A]]): String = fileOut
       })
-      val write = new ElementWriter(writeFn("target"))
 
-      val sequence = new TransformationSequence(read, concat, write)
+      val write = ElementWriter(writeFn("target"))
 
       val elements = Seq(
-        Element(makePath(pkg, "files", "one.txt")),
-        Element(makePath(pkg, "files", "two.txt"))
+        PathElement(makePath(pkg, "files", "one.txt")),
+        PathElement(makePath(pkg, "files", "two.txt"))
       )
-      sequence.run(elements)
+
+      (read andThen concat andThen write)(elements)
 
       readFn("target")(fileOut).map {
-        c =>
-          c === "one\ntwo"
+         e =>
+          e.contents === "one\ntwo"
           success
       }.getOrElse(failure("can't find file"))
 

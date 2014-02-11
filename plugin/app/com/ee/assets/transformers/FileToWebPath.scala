@@ -3,16 +3,12 @@ package com.ee.assets.transformers
 import com.ee.assets.models.AssetsInfo
 import com.ee.log.Logger
 
-class FileToWebPath(info: AssetsInfo) extends Transformer {
+class FileToWebPath(info: AssetsInfo) extends Transformer[Unit,Unit] {
 
   lazy val logger = Logger("file-to-web")
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
-
-    elements.map {
-      e =>
-        e.copy(toWebPath(e.path), None)
-    }
+  override def run(elements: Seq[Element[Unit]]): Seq[PathElement] = {
+    elements.map(e => PathElement(toWebPath(e.path)))
   }
 
   private def toWebPath(p: String): String = {
@@ -22,6 +18,6 @@ class FileToWebPath(info: AssetsInfo) extends Transformer {
     }
     val out = p.replace(info.filePath, info.webPath)
 
-    if(out.startsWith("/")) out else s"/$out"
+    if (out.startsWith("/")) out else s"/$out"
   }
 }

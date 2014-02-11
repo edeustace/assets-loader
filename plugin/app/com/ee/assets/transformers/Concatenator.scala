@@ -2,11 +2,15 @@ package com.ee.assets.transformers
 
 import com.ee.log.Logger
 
-class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Transformer {
+object Concatenator{
+  def apply(pathNamer : PathNamer, separator : String = "\n") = new Concatenator(pathNamer, separator).run _
+}
+
+class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Transformer[String,String] {
 
   lazy val logger = Logger("transformer.concatenator")
 
-  override def run(elements: Seq[Element]): Seq[Element] = {
+  override def run(elements: Seq[Element[String]]): Seq[Element[String]] = {
 
     logger.trace( s"run: ${elements.map(_.path).mkString(",")}")
 
@@ -14,12 +18,21 @@ class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Trans
 
     elements.foreach {
       (e) =>
-        e.contents.map(builder.append)
+        builder.append(e.contents)
         builder.append(separator)
     }
+
     val concatName = pathNamer.name(elements)
-    logger.debug(s"name: $concatName")
-    Seq(Element(concatName, Some(builder.toString())))
+    val lm = elements
+      .map(_.lastModified)
+      .flatten
+      .sorted
+      .reverse
+      .headOption
+
+    logger.trace(s"concatenated name: $concatName")
+
+    Seq(ContentElement(concatName, builder.toString, lm))
   }
 
 }

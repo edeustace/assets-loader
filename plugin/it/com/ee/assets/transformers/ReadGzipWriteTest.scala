@@ -1,35 +1,38 @@
 package com.ee.assets.transformers
 
-import org.specs2.mutable.Specification
-import java.util.zip.GZIPInputStream
 import java.io._
+import java.util.zip.GZIPInputStream
+import org.specs2.mutable.Specification
 
 class ReadGzipWriteTest extends Specification with BaseIntegration {
-
 
   "Read,Gzip,Write" should {
 
     val outDir = makePath("target", "test-files", "gzip-files")
 
+    def fileFn(path: String) = {
+      val f = new File(makePath(outDir, path))
+      f.getParentFile.mkdirs()
+      f
+    }
+
     "work" in new cleanGenerated(outDir) {
-      val read = new ElementReader(readFn("it"))
-
-      val write = new ElementWriter(writeFn(outDir))
-
-      val gzipWriter = new GzipperWriter(p => new File(makePath(outDir, p)))
-
-      val sequence = new TransformationSequence(read, gzipWriter)
+      val read = ElementReader(readFn("it"))
+      val gzip = Gzip()
+      val write = ByteArrayWriter(fileFn)
 
       val elements = Seq(
-        Element(makePath(pkg, "js-files", "one.js"))
+        PathElement(makePath(pkg, "js-files", "one.js"))
       )
 
-      sequence.run(elements)
+      val combi = read andThen gzip andThen write
 
-      readGzip(makePath(outDir, pkg, "js-files", "one.gz.js")).trim ===
+      val processed = combi(elements)
+
+      readGzip( s"$outDir${File.separator}${processed(0).path}").trim ===
         """var x = function(){
           |}
-          |""".stripMargin.trim
+          | """.stripMargin.trim
     }
   }
 

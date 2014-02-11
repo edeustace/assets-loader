@@ -14,8 +14,17 @@ import play.api.{Play, Configuration, Mode}
 
 class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configuration, closureCompilerOptions: Option[CompilerOptions] = None) {
 
-  private lazy val JsConfig: AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.js, config)
-  private lazy val CssConfig: AssetsLoaderConfig = AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.css, config)
+  private lazy val JsConfig: AssetsLoaderConfig = validateConfig(AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.js, config))
+  private lazy val CssConfig: AssetsLoaderConfig = validateConfig(AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.css, config))
+
+  private def validateConfig(c: AssetsLoaderConfig): AssetsLoaderConfig = {
+    if (c.deploy && deployer.isEmpty) {
+      logger.warn(s"Deployment has been enabled but no deployer has been specified - setting deploy to false. Original config: $c")
+      c.copy(deploy = false)
+    } else {
+      c
+    }
+  }
 
   private lazy val Info: AssetsInfo = AssetsInfo("assets", "public")
 
@@ -78,16 +87,16 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
 
   private def prepareTags(
                            filetypeFilter: String => Boolean,
-                           sequence: Seq[Transformer],
+                           transformationFn: Seq[Element[Unit]] => Seq[Element[Unit]],
                            tagFn: String => String)(paths: String*): Html = {
-    val elements = toElements(filetypeFilter)(paths: _*)
-    logger.trace(s"Initialising generated assets folder to: ${generatedDir.getAbsolutePath}")
-    val transformation = new TransformationSequence(sequence: _*)
-    val transformed = transformation.run(elements)
-    import com.ee.assets.Templates._
-    val tags = transformed.map(e => tagFn(e.path))
 
-    val out = s"""
+    def transformAndCreateHtml(elements: Seq[Element[Unit]]) : Html = {
+      logger.trace(s"Initialising generated assets folder to: ${generatedDir.getAbsolutePath}")
+      val transformed = transformationFn(elements)
+      import com.ee.assets.Templates._
+      val tags = transformed.map(e => tagFn(e.path))
+
+      val out = s"""
       <!--
       Request:
       --------
@@ -101,7 +110,14 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
       <!-- tags -->
       ${mainTemplate(transformed.map(_.path).mkString("\n"), tags.mkString("\n"))}
     """
-    Html(out)
+      Html(out)
+    }
+
+    toElements(filetypeFilter)(paths: _*) match {
+      case Nil => Html(s"<!-- missing: ${paths.mkString(",")} -->")
+      case e: Seq[Element[Unit]] => transformAndCreateHtml(e)
+    }
+
   }
 
 
@@ -115,26 +131,16 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
                                     concatPrefix: String,
                                     suffix: String,
                                     config: AssetsLoaderConfig,
-                                    minify: Transformer) = {
+                                    minify: Transformer[String, String]): Seq[Element[Unit]] => Seq[Element[Unit]] = {
     val read = new PlayResourceReader
     val namer = new CommonRootNamer(concatPrefix, suffix)
     val concat = new Concatenator(namer)
     val toWebPath = new FileToWebPath(Info)
-    val write = if (!config.concatenate && !config.minify && !config.gzip) {
-      None
-    } else {
-      if (config.gzip) Some(new GzipperWriter(pathToFile))
-      else
-        Some(new Writer(writeToGeneratedFolder))
-    }
-
-    Seq(
-      Some(read),
-      if (config.concatenate) Some(concat) else None,
-      if (config.minify) Some(minify) else None,
-      write,
-      Some(toWebPath)
-    ).flatten
+    val gzip = new Gzip()
+    val stringWriter = if (config.deploy) new StringDeploy(deployer.get).run _ else new Writer(writeToGeneratedFolder).run _ andThen toWebPath.run _
+    val byteWriter = if (config.deploy) new ByteArrayDeploy(deployer.get).run _ else new ByteArrayWriter(pathToFile).run _ andThen toWebPath.run _
+    val builder = new TransformationBuilder(read.run, concat.run, gzip.run, minify.run, stringWriter, byteWriter, toWebPath.run)
+    builder.build(config)
   }
 
   def writeToGeneratedFolder(path: String, contents: String): Unit = {
@@ -147,23 +153,32 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
   def pathToFile(p: String): File = new File(s"$generatedDir${File.separator}/$p")
 
 
-  private def toElements(filter: String => Boolean)(paths: String*): Seq[Element] = {
+  private def toElements(filter: String => Boolean)(paths: String*): Seq[Element[Unit]] = {
 
     import play.api.Play.current
     logger.debug(s"[toElements]: $paths")
     def publicDir(p: String) = s"${Info.filePath}/$p"
-    paths.map {
+
+    val pathsAndUrls: Seq[(String, URL)] = paths.map {
       p =>
-
-        def toUrl(p: String): URL = Play.resource(p).getOrElse {
-          throw new AssetsLoaderException(s"[toElements] can't load path: $p")
+        val public = publicDir(p)
+        Play.resource(public).map((public, _)).orElse {
+          logger.warn(s"[toElements] Can't find resource: $p")
+          None
         }
+    }.flatten
 
-        val paths = PathResolver.resolve(publicDir(p), toUrl)
+
+
+    pathsAndUrls.map {
+      t: (String, URL) =>
+
+        val paths = PathResolver.resolve(t._1, t._2)
         val filtered = paths.filter(filter)
         logger.trace(s"[toElements]: \n${filtered.mkString("\n")}")
-        filtered.map(Element(_))
+        filtered.map(PathElement(_))
     }.flatten
   }
 }
+
 
