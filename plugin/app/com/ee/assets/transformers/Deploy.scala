@@ -29,12 +29,20 @@ abstract class BaseDeploy[A](d: Deployer) extends Transformer[A, Unit] {
 }
 
 
+object StringDeploy {
+  def apply(d: Deployer) = new StringDeploy(d).run _
+}
+
 class StringDeploy(d: Deployer) extends BaseDeploy[String](d) {
   override protected def logger = Logger("deploy.string")
 
   override def getInputStream(c: String): InputStream = new ByteArrayInputStream(c.getBytes("UTF-8"))
 
   override protected def encoding: Option[String] = None
+}
+
+object ByteArrayDeploy {
+  def apply(d: Deployer) = new ByteArrayDeploy(d).run _
 }
 
 class ByteArrayDeploy(d: Deployer) extends BaseDeploy[Array[Byte]](d) {

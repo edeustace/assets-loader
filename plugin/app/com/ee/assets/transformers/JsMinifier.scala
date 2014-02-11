@@ -1,8 +1,12 @@
 package com.ee.assets.transformers
 
 import com.ee.js.JavascriptCompiler
-import com.google.javascript.jscomp.CompilerOptions
 import com.ee.log.Logger
+import com.google.javascript.jscomp.CompilerOptions
+
+object JsMinifier {
+  def apply(compilerOptions: Option[CompilerOptions] = None) = new JsMinifier(compilerOptions).run _
+}
 
 class JsMinifier(compilerOptions: Option[CompilerOptions] = None) extends Transformer[String, String] {
 

@@ -2,6 +2,10 @@ package com.ee.assets.transformers
 
 import com.ee.log.Logger
 
+object Concatenator{
+  def apply(pathNamer : PathNamer, separator : String = "\n") = new Concatenator(pathNamer, separator).run _
+}
+
 class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Transformer[String,String] {
 
   lazy val logger = Logger("transformer.concatenator")

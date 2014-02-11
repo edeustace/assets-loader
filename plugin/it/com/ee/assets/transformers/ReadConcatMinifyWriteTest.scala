@@ -13,28 +13,28 @@ class ReadConcatMinifyWriteTest extends Specification with BaseIntegration{
 
     "work" in new cleanGenerated(outDir){
 
-      val read = new ElementReader(readFn("it"))
+      val read = ElementReader(readFn("it"))
 
-      val concat = new Concatenator(new PathNamer {
+      val concat = Concatenator(new PathNamer {
         override def name[A](elements: Seq[Element[A]]): String = fileConcatted
       })
 
-      val minify = new JsMinifier()
+      val minify = JsMinifier()
 
-      val write = new ElementWriter(writeFn(outDir))
+      val write = ElementWriter(writeFn(outDir))
 
-      val sequence = new TransformationSequence(read, concat, minify, write)
+      val combi = read andThen concat andThen minify andThen write
 
-      val elements : Seq[Element[String]]= Seq(
-        Element[String](makePath(pkg, "js-files", "one.js")),
-        Element[String](makePath(pkg, "js-files", "two.js"))
+      val elements : Seq[Element[Unit]]= Seq(
+        PathElement(makePath(pkg, "js-files", "one.js")),
+        PathElement(makePath(pkg, "js-files", "two.js"))
       )
 
-      sequence.run(elements)
+      combi(elements)
 
       readFn(outDir)(fileConcattestMinified).map {
-        c =>
-          c === "var x=function(){console.log(\"hello one\")};var y=function(){console.log(\"hello two\")};"
+        e =>
+          e.contents === "var x=function(){console.log(\"hello one\")};var y=function(){console.log(\"hello two\")};"
           success
       }.getOrElse(failure("can't find file"))
 

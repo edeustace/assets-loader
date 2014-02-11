@@ -2,6 +2,10 @@ package com.ee.assets.transformers
 
 import com.ee.log.Logger
 
+object ElementReader {
+  def apply(read: String => Option[Element[String]]) = new ElementReader(read).run _
+}
+
 class ElementReader(read: String => Option[Element[String]]) extends Transformer[Unit, String] {
 
   val logger = Logger("ElementReader")
@@ -12,6 +16,10 @@ class ElementReader(read: String => Option[Element[String]]) extends Transformer
     val out: Seq[Element[String]] = elements.map(e => read(e.path)).flatten
     out
   }
+}
+
+object ElementWriter {
+  def apply(write: Element[String] => String) = new ElementWriter(write).run _
 }
 
 class ElementWriter(write: Element[String] => String) extends Transformer[String, Unit] {

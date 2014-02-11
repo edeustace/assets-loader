@@ -26,7 +26,7 @@ trait BaseIntegration extends Specification {
 
   def makePath(parts: String*) = parts.mkString(File.separator)
 
-  def readFn(root: String)(path: String): Option[String] = {
+  def readFn(root: String)(path: String): Option[Element[String]] = {
 
     val readPath = makePath(root, path)
 
@@ -34,7 +34,7 @@ trait BaseIntegration extends Specification {
     val f = new File(readPath)
 
     if (f.exists) {
-      Some(scala.io.Source.fromFile(f).getLines.mkString("\n"))
+      Some(ContentElement(path, scala.io.Source.fromFile(f).getLines.mkString("\n"), None))
     } else {
       println(s"file: $f doesn't exist")
       None
@@ -45,12 +45,9 @@ trait BaseIntegration extends Specification {
 
     import com.ee.utils.file.writeToFile
 
-    e.contents.foreach {
-      c =>
-        val path = makePath(root, e.path)
-        println(s"[writeFn] $path")
-        writeToFile(makePath(root, e.path), c)
-    }
+    val path = makePath(root, e.path)
+    println(s"[writeFn] $path")
+    writeToFile(makePath(root, e.path), e.contents)
     e.path
   }
 

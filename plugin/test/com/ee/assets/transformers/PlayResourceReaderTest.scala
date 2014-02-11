@@ -14,7 +14,7 @@ class PlayResourceReaderTest extends PlaySpecification {
         import play.api.Play.current
         val reader = new PlayResourceReader()
         val path = "public/one/testfile.js"
-        val elements = Seq(Element[String](path))
+        val elements = Seq(PathElement(path))
         val read = reader.run(elements)
         read(0).path === path
         Play.resource(read(0).path).map {

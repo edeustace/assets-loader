@@ -16,9 +16,9 @@ class GzipWriteTest
     val s = "alert('hello');"
     val outDir = makePath("target", "test-files", "gzip-files")
 
-    val gzip = new Gzip()
+    val gzip = Gzip()
 
-    val writer = new ByteArrayWriter((p: String) => {
+    val write = ByteArrayWriter((p: String) => {
       val f = new File(makePath(outDir, p))
       f.getParentFile.mkdirs()
       f
@@ -26,8 +26,8 @@ class GzipWriteTest
     )
 
     "work" in new cleanGenerated(outDir) {
-      val zipped = gzip.run(Seq(Element("blah.js", Some(s))))
-      val written = writer.run(zipped)
+      val zipped = gzip(Seq(ContentElement("blah.js", s, None)))
+      val written = write(zipped)
       written.length === 1
       written(0).path
       val readBytes: Array[Byte] = IOUtils.toByteArray(new FileInputStream(new File(written(0).path)))
@@ -35,12 +35,11 @@ class GzipWriteTest
     }
 
     "work with flow" in new cleanGenerated(outDir) {
-      val s = Some("console.log('blah');")
-      //TOD: allow: val combi = gzip _ andThen write _
-      val combi = gzip.run _ andThen writer.run _
-      val out = combi(Seq(Element("blah-two.js", s)))
+      val s = "console.log('blah');"
+      val combi = gzip andThen write
+      val out = combi(Seq(ContentElement("blah-two.js", s, None)))
       val readBytes: Array[Byte] = IOUtils.toByteArray(new FileInputStream(new File(out(0).path)))
-      decompress(readBytes) === s.get
+      decompress(readBytes) === s
     }
   }
 }
