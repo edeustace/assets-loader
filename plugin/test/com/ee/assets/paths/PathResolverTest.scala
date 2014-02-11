@@ -20,7 +20,7 @@ class PathResolverTest extends Specification {
         new URL(s"jar:file:$jarPath!/$p")
       }
 
-      val jarList = resolver.resolve("jarOne", toJarUrl)
+      val jarList = resolver.resolve("jarOne", toJarUrl("jarOne"))
 
       def trimSlash(s: String) = if (s.startsWith("/")) s.substring(1) else s
 
@@ -29,7 +29,7 @@ class PathResolverTest extends Specification {
         new URL(s"file:$jarContentsPath${File.separator}$p")
       }
 
-      val fileList = resolver.resolve("jarOne", toFileUrl)
+      val fileList = resolver.resolve("jarOne", toFileUrl("jarOne"))
 
       logger.debug("file listing: " + fileList.mkString("\n"))
       logger.debug("jar listing: " + jarList.mkString("\n"))

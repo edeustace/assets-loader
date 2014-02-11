@@ -5,6 +5,8 @@
 <html>
     <head>
         <title>@title</title>
+
+        @views.Helper.loader.css("missing")("stylesheets/missing-file.css")
         @views.Helper.loader.css("stylesheet-test")("stylesheets/styles.css")
         @views.Helper.loader.css("example")( "stylesheets" )
         @views.Helper.loader.scripts("example")( "javascripts/example" )

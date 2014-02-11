@@ -9,13 +9,13 @@ object PathResolver {
 
   lazy val logger = Logger("paths")
 
-  def resolve(path: String, toUrl: String => URL): Seq[String] = {
+  def resolve(path: String, url: URL): Seq[String] = {
 
-    val url = toUrl(path)
     val paths = url.getProtocol match {
       case "jar" => jarPaths(url)
       case "file" => filePaths(path, url)
     }
+
     paths.sortWith {
       (a, b) =>
 
@@ -28,6 +28,7 @@ object PathResolver {
           aSlashCount < bSlashCount
         }
     }
+
   }
 
   private def jarPaths(url: URL): Seq[String] = {

@@ -89,13 +89,14 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
                            filetypeFilter: String => Boolean,
                            transformationFn: Seq[Element[Unit]] => Seq[Element[Unit]],
                            tagFn: String => String)(paths: String*): Html = {
-    val elements = toElements(filetypeFilter)(paths: _*)
-    logger.trace(s"Initialising generated assets folder to: ${generatedDir.getAbsolutePath}")
-    val transformed = transformationFn(elements)
-    import com.ee.assets.Templates._
-    val tags = transformed.map(e => tagFn(e.path))
 
-    val out = s"""
+    def transformAndCreateHtml(elements: Seq[Element[Unit]]) : Html = {
+      logger.trace(s"Initialising generated assets folder to: ${generatedDir.getAbsolutePath}")
+      val transformed = transformationFn(elements)
+      import com.ee.assets.Templates._
+      val tags = transformed.map(e => tagFn(e.path))
+
+      val out = s"""
       <!--
       Request:
       --------
@@ -109,7 +110,14 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
       <!-- tags -->
       ${mainTemplate(transformed.map(_.path).mkString("\n"), tags.mkString("\n"))}
     """
-    Html(out)
+      Html(out)
+    }
+
+    toElements(filetypeFilter)(paths: _*) match {
+      case Nil => Html(s"<!-- missing: ${paths.mkString(",")} -->")
+      case e: Seq[Element[Unit]] => transformAndCreateHtml(e)
+    }
+
   }
 
 
@@ -150,14 +158,22 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
     import play.api.Play.current
     logger.debug(s"[toElements]: $paths")
     def publicDir(p: String) = s"${Info.filePath}/$p"
-    paths.map {
+
+    val pathsAndUrls: Seq[(String, URL)] = paths.map {
       p =>
-
-        def toUrl(p: String): URL = Play.resource(p).getOrElse {
-          throw new AssetsLoaderException(s"[toElements] can't load path: $p")
+        val public = publicDir(p)
+        Play.resource(public).map((public, _)).orElse {
+          logger.warn(s"[toElements] Can't find resource: $p")
+          None
         }
+    }.flatten
 
-        val paths = PathResolver.resolve(publicDir(p), toUrl)
+
+
+    pathsAndUrls.map {
+      t: (String, URL) =>
+
+        val paths = PathResolver.resolve(t._1, t._2)
         val filtered = paths.filter(filter)
         logger.trace(s"[toElements]: \n${filtered.mkString("\n")}")
         filtered.map(PathElement(_))
