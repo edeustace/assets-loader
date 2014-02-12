@@ -89,10 +89,10 @@ You can pass in your own closure compiler options when you are instantiating the
 
 #### Add the Asset Loader as a dependency to your build:
 
-      val assetsLoader = "com.ee" %% "assets-loader" % "0.11.7"
+      val assetsLoader = "com.ee" %% "assets-loader" % "0.11.8"
       
       // snapshot version
-      //val assetsLoader = "com.ee" %% "assets-loader" % "0.11.8-SNAPSHOT"
+      //val assetsLoader = "com.ee" %% "assets-loader" % "0.11.9-SNAPSHOT"
 
       val assetsLoaderReleases = "ed eustace" at "http://edeustace.com/repository/releases"
       val assetsLoaderSnapshots = "ed eustace" at "http://edeustace.com/repository/snapshots"
@@ -112,6 +112,7 @@ You can pass in your own closure compiler options when you are instantiating the
           concatenate:true
           minify:false
           gzip:false
+          deploy: true
         }
         css : {
           concatenate:true
