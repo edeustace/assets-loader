@@ -1,11 +1,10 @@
 package com.ee.assets.paths
 
 import com.ee.JarContext
-import com.ee.utils.file
+import com.ee.log.Logger
 import java.io.File
 import java.net.URL
 import org.specs2.mutable.Specification
-import com.ee.log.Logger
 
 class PathResolverTest extends Specification {
 
