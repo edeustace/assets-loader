@@ -13,11 +13,11 @@ It will process the files depending on the configuration you provide
 
 The example is configured as a Play 2.2.1 application by default.
 
-To see the logs in dev mode run: 
-    
+To see the logs in dev mode run:
+
      play -Dlogger.file=conf/logging/prod.xml
 
-To see the logs in prod mode run: 
+To see the logs in prod mode run:
 
     ./target/universal/stage/bin/example-221 -Dlogger.file=conf/logging/prod.xml
 
@@ -90,7 +90,7 @@ You can pass in your own closure compiler options when you are instantiating the
 #### Add the Asset Loader as a dependency to your build:
 
       val assetsLoader = "com.ee" %% "assets-loader" % "0.11.8"
-      
+
       // snapshot version
       //val assetsLoader = "com.ee" %% "assets-loader" % "0.11.9-SNAPSHOT"
 
@@ -113,6 +113,7 @@ You can pass in your own closure compiler options when you are instantiating the
           minify:false
           gzip:false
           deploy: true
+          addHints: true|false (default: false)
         }
         css : {
           concatenate:true
@@ -132,6 +133,16 @@ You can pass in your own closure compiler options when you are instantiating the
         gzip: true
       }
     }
+
+#### Options
+
+The following options apply to all configurations:
+
+* concatenate (true|*false*) - concatenate the files
+* minify (true|*false*) - minify the files
+* gzip (true|*false*) - gzip the files
+* addHints (true|*false*) - add hint information to the html - useful for debugging
+
 
 #### Use the Asset Loader Assets Controller
 The default Assets controller in Play doesn't work with the loader because it only does a look up on the classLoader, the provided controller also looks up using the file system.
@@ -154,7 +165,7 @@ Clone the project and run `play`.
 - Fixed issues with prod mode + play 2.2.1
 - Support in dev mode for windows style paths
 
-### 0.11.1 
+### 0.11.1
 - Added optional closure CompilerOptions as parameter to the loader
 
 ### 0.11.0

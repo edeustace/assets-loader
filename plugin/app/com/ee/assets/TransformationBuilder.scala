@@ -19,17 +19,17 @@ class TransformationBuilder(
     def withStringWrite(writeFn: Seq[Element[String]] => Seq[Element[Unit]]): Seq[Element[Unit]] => Seq[Element[Unit]] = {
 
       config match {
-        case AssetsLoaderConfig(true, false, _, _) => read andThen concat andThen writeFn
-        case AssetsLoaderConfig(false, true, _, _) => read andThen minify andThen writeFn
-        case AssetsLoaderConfig(true, true, _, _) => read andThen concat andThen minify andThen writeFn
-        case AssetsLoaderConfig(false, false, _, _) => read andThen writeFn
+        case AssetsLoaderConfig(true, false, _, _, _) => read andThen concat andThen writeFn
+        case AssetsLoaderConfig(false, true, _, _, _) => read andThen minify andThen writeFn
+        case AssetsLoaderConfig(true, true, _, _, _) => read andThen concat andThen minify andThen writeFn
+        case AssetsLoaderConfig(false, false, _, _, _) => read andThen writeFn
       }
     }
 
     config match {
-      case AssetsLoaderConfig(false, false, false, false) => webPath
-      case AssetsLoaderConfig(_, _, false, _) => withStringWrite(stringWriter)
-      case AssetsLoaderConfig(_, _, true, _ ) => withStringWrite(gzip andThen byteWriter)
+      case AssetsLoaderConfig(false, false, false, false, _) => webPath
+      case AssetsLoaderConfig(_, _, false, _, _) => withStringWrite(stringWriter)
+      case AssetsLoaderConfig(_, _, true, _ , _) => withStringWrite(gzip andThen byteWriter)
       case _ => e => e
     }
   }
