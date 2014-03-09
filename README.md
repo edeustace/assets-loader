@@ -138,6 +138,12 @@ The default Assets controller in Play doesn't work with the loader because it on
 
     GET     /assets/*file               com.ee.assets.controllers.Assets.at(path="/public", file)
 
+
+#### About Css concatenation
+
+Css concatenation doesn't account for paths to other resources within css files, so paths may break if the source css file and the concatenated css are in different folders. We are looking into whats the best way to [solve this](#24).
+
+
 #### Logging
 If you want to see logs from asset loader - make sure you add a logger for 'assets-loader' to your log config.
 
