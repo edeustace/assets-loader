@@ -141,7 +141,7 @@ The default Assets controller in Play doesn't work with the loader because it on
 
 #### About Css concatenation
 
-Css concatenation doesn't account for paths to other resources within css files, so paths may break if the source css file and the concatenated css are in different folders. We are looking into whats the best way to [solve this](issues/24).
+Css concatenation doesn't account for paths to other resources within css files, so paths may break if the source css file and the concatenated css are in different folders. We are looking into whats the best way to [solve this](/edeustace/assets-loader/issues/24).
 
 
 #### Logging
