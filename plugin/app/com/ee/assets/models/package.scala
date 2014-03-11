@@ -17,7 +17,14 @@ package object models {
    * @param gzip
    * @param deploy - if false then the deployer will not be invoked
    */
-  private[assets] case class AssetsLoaderConfig(concatenate: Boolean, minify: Boolean, gzip: Boolean, deploy: Boolean)
+  private[assets] case class AssetsLoaderConfig(
+                                                 concatenate: Boolean,
+                                                 minify: Boolean,
+                                                 gzip: Boolean,
+                                                 deploy: Boolean,
+                                                 addHints : Boolean = false)
+
+
 
   object AssetsLoaderConfig {
 
@@ -39,12 +46,12 @@ package object models {
       implicit def toBoolean(property: String): Boolean = {
         config.map {
           c =>
-            logger.trace("%s: %s".format(property, c.getBoolean(property)))
+            logger.trace( s"${property}: ${c.getBoolean(property)}")
             c.getBoolean(property).getOrElse(false)
         }.getOrElse(false)
       }
 
-      AssetsLoaderConfig("concatenate", "minify", "gzip", "deploy")
+      AssetsLoaderConfig("concatenate", "minify", "gzip", "deploy", "addHints")
     }
 
   }

@@ -1,7 +1,6 @@
 package com.ee.assets
 
 import com.ee.assets.deployment.Deployer
-import com.ee.assets.exceptions.AssetsLoaderException
 import com.ee.assets.models.{Suffix, AssetsLoaderConfig, AssetsInfo}
 import com.ee.assets.paths.PathResolver
 import com.ee.assets.transformers._
@@ -51,7 +50,8 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
         val tags = prepareTags(
           s => s.endsWith(".js"),
           buildJsTransformations(concatPrefix),
-          Templates.script
+          Templates.script,
+          JsConfig.addHints
         )(paths: _*)
 
         TagCache.js.put(key, tags)
@@ -76,7 +76,8 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
         val tags = prepareTags(
           s => s.endsWith(".css"),
           buildCssTransformations(concatPrefix),
-          Templates.css
+          Templates.css,
+          CssConfig.addHints
         )(paths: _*)
 
         TagCache.css.put(key, tags)
@@ -88,33 +89,47 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
   private def prepareTags(
                            filetypeFilter: String => Boolean,
                            transformationFn: Seq[Element[Unit]] => Seq[Element[Unit]],
-                           tagFn: String => String)(paths: String*): Html = {
+                           tagFn: String => String,
+                           addHints: Boolean)(paths: String*): Html = {
 
-    def transformAndCreateHtml(elements: Seq[Element[Unit]]) : Html = {
+    def transformAndCreateHtml(elements: Seq[Element[Unit]]): Html = {
       logger.trace(s"Initialising generated assets folder to: ${generatedDir.getAbsolutePath}")
       val transformed = transformationFn(elements)
       import com.ee.assets.Templates._
       val tags = transformed.map(e => tagFn(e.path))
 
-      val out = s"""
+      val tagString = tags.mkString("\n")
+      val pathString = transformed.map(_.path).mkString("\n")
+
+      def hinted = s"""
       <!--
+      [assets-loader] hints
+      (you can disable these by adding `addHints: false` to your conf)
+
+      url:
+      $pathString
+
       Request:
       --------
       ${paths.mkString("\n")}
 
-      Elements raw:
+      Found Elements:
       -----------------
       ${elements.map(_.path).mkString("\n")}
 
       -->
-      <!-- tags -->
-      ${mainTemplate(transformed.map(_.path).mkString("\n"), tags.mkString("\n"))}
-    """
+
+      $tagString
+      """
+
+      def plain = tags.mkString("\n")
+
+      val out = if (addHints) hinted else plain
       Html(out)
     }
 
     toElements(filetypeFilter)(paths: _*) match {
-      case Nil => Html(s"<!-- missing: ${paths.mkString(",")} -->")
+      case Nil => if(addHints) Html(s"<!-- [assets-loader] warning: missing ${paths.mkString(",")} -->") else Html("")
       case e: Seq[Element[Unit]] => transformAndCreateHtml(e)
     }
 
