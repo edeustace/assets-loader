@@ -11,7 +11,20 @@ import java.net.URL
 import play.api.templates.Html
 import play.api.{Play, Configuration, Mode}
 
-class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configuration, closureCompilerOptions: Option[CompilerOptions] = None) {
+/**
+ *
+ * @param deployer
+ * @param mode
+ * @param config
+ * @param closureCompilerOptions
+ * @param info - path info that maps the web path (when loading the assets via the server) -> file path (the location of the files in the project)
+ */
+class Loader(
+              deployer: Option[Deployer] = None,
+              mode: Mode.Mode,
+              config: Configuration,
+              closureCompilerOptions: Option[CompilerOptions] = None,
+              info: AssetsInfo = AssetsInfo("assets", "public")) {
 
   private lazy val JsConfig: AssetsLoaderConfig = validateConfig(AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.js, config))
   private lazy val CssConfig: AssetsLoaderConfig = validateConfig(AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.css, config))
@@ -24,8 +37,6 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
       c
     }
   }
-
-  private lazy val Info: AssetsInfo = AssetsInfo("assets", "public")
 
   val generatedDir = com.ee.utils.play.generatedFolder
 
@@ -150,7 +161,7 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
     val read = new PlayResourceReader
     val namer = new CommonRootNamer(concatPrefix, suffix)
     val concat = new Concatenator(namer)
-    val toWebPath = new FileToWebPath(Info)
+    val toWebPath = new FileToWebPath(info)
     val gzip = new Gzip()
     val stringWriter = if (config.deploy) new StringDeploy(deployer.get).run _ else new Writer(writeToGeneratedFolder).run _ andThen toWebPath.run _
     val byteWriter = if (config.deploy) new ByteArrayDeploy(deployer.get).run _ else new ByteArrayWriter(pathToFile).run _ andThen toWebPath.run _
@@ -172,7 +183,7 @@ class Loader(deployer: Option[Deployer] = None, mode: Mode.Mode, config: Configu
 
     import play.api.Play.current
     logger.debug(s"[toElements]: $paths")
-    def publicDir(p: String) = s"${Info.filePath}/$p"
+    def publicDir(p: String) = s"${info.filePath}/$p"
 
     val pathsAndUrls: Seq[(String, URL)] = paths.map {
       p =>

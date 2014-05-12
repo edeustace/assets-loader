@@ -3,6 +3,7 @@ package views
 import play.api.Play
 import java.io.InputStream
 import com.ee.assets.deployment.{ContentInfo, Deployer}
+import com.ee.assets.models.AssetsInfo
 
 object Helper{
 
@@ -18,6 +19,6 @@ object Helper{
     }
   }
 
-  val loader = new com.ee.assets.Loader(None, Play.current.mode, Play.current.configuration)
+  val loader = new com.ee.assets.Loader(None, Play.current.mode, Play.current.configuration, info = AssetsInfo("context/assets", "public"))
   val deployLoader = new com.ee.assets.Loader(Some(deployer), Play.current.mode, Play.current.configuration)
 }
