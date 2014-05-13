@@ -56,7 +56,15 @@ The loader will concatenate singleFile.js, app.js and helper.js into one file, m
 
 ### Api
 
-    //Loader(deployer:Option[Deployer] = None, mode : Mode.Mode, config : Configuration, closureCompilerOptions : Option[CompilerOptions] = None)
+    /**
+      Loader(
+        deployer:Option[Deployer] = None,
+        mode : Mode.Mode,
+        config : Configuration,
+        closureCompilerOptions : Option[CompilerOptions] = None,
+        info : AssetsInfo = AssetsInfo("assets", "public")
+      )
+    */
     val loader = new com.ee.assets.Loader(None, Play.current.mode, Play.current.configuration)
 
     loader.scripts("name")("path_to_scripts_folder_or_file", ...)
@@ -90,7 +98,7 @@ You can pass in your own closure compiler options when you are instantiating the
 #### Add the Asset Loader as a dependency to your build:
 
       val assetsLoader = "com.ee" %% "assets-loader" % "0.12.1"
-      
+
       // snapshot version
       //val assetsLoader = "com.ee" %% "assets-loader" % "0.12.2-SNAPSHOT"
 
