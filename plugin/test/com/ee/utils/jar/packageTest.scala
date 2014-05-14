@@ -24,14 +24,14 @@ class jarPackageTest extends Specification {
   "list children" should {
 
     "work" in new JarContext("test/com/ee/utils/jar/jarOne", "target/tmpJarFolder") {
-      val out = listChildrenInJar(new JarFile(jarPath), p => true)
+      val out = listChildrenInJar(new JarFile(jarPath), p => true).sorted
       out === List("public/", "public/nested/", "public/nested/public.txt", "public/public.txt", "test.txt")
     }
 
     "filter should work" in new JarContext("test/com/ee/utils/jar/jarOne", "target/tmpJarFolder") {
       def folders(p:String) = p.endsWith("/")
       val noFolders = (folders(_:String) == false)
-      val out = listChildrenInJar(new JarFile(jarPath), noFolders)
+      val out = listChildrenInJar(new JarFile(jarPath), noFolders).sorted
       out === Seq("public/nested/public.txt", "public/public.txt", "test.txt")
     }
   }
