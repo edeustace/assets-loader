@@ -1,6 +1,6 @@
 # assets-loader
 
-[![Build Status](https://www.codeship.io/projects/4218cdb0-bcfd-0131-fa28-4e030f7dcbdf/status)](https://www.codeship.io/projects/21132)
+![Build Status](https://www.codeship.io/projects/4218cdb0-bcfd-0131-fa28-4e030f7dcbdf/status)
 
 
 A play plugin that concatenates, minifies and gzips your JS or Css.
