@@ -1,7 +1,7 @@
 package com.ee.assets
 
 import com.ee.assets.deployment.Deployer
-import com.ee.assets.models.{Suffix, AssetsLoaderConfig, AssetsInfo}
+import com.ee.assets.models.{SimpleAssetsInfo, Suffix, AssetsLoaderConfig, AssetsInfo}
 import com.ee.assets.paths.PathResolver
 import com.ee.assets.transformers._
 import com.ee.log.Logger
@@ -24,7 +24,7 @@ class Loader(
               mode: Mode.Mode,
               config: Configuration,
               closureCompilerOptions: Option[CompilerOptions] = None,
-              info: AssetsInfo = AssetsInfo("assets", "public")) {
+              info: AssetsInfo = SimpleAssetsInfo("assets", "public")) {
 
   private lazy val JsConfig: AssetsLoaderConfig = validateConfig(AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.js, config))
   private lazy val CssConfig: AssetsLoaderConfig = validateConfig(AssetsLoaderConfig.fromAppConfiguration(mode.toString.toLowerCase, Suffix.css, config))
@@ -42,10 +42,7 @@ class Loader(
 
   val logger = Logger("new-loader")
 
-  logger.warn("Note: deployer is currently disabled")
-
   def scripts(concatPrefix: String)(paths: String*): play.api.templates.Html = {
-
 
     val key = s"$concatPrefix-${paths.sortWith(_ < _).mkString(",").hashCode}"
 

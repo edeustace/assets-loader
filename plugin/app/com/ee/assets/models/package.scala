@@ -56,8 +56,12 @@ package object models {
 
   }
 
+  trait AssetsInfo{
+    def webPath:String
+    def filePath:String
+  }
 
-  case class AssetsInfo(webPath: String, filePath: String)
+  case class SimpleAssetsInfo(webPath: String, filePath: String) extends AssetsInfo
 
 }
 
