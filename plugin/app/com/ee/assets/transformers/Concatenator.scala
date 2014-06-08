@@ -22,7 +22,8 @@ class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Trans
         builder.append(separator)
     }
 
-    val concatName = pathNamer.name(elements)
+    val contents = builder.toString
+    val concatName = pathNamer.name(elements, contents.hashCode)
     val lm = elements
       .map(_.lastModified)
       .flatten
@@ -32,7 +33,7 @@ class Concatenator(pathNamer: PathNamer, separator: String = "\n") extends Trans
 
     logger.trace(s"concatenated name: $concatName")
 
-    Seq(ContentElement(concatName, builder.toString, lm))
+    Seq(ContentElement(concatName, contents, lm))
   }
 
 }
