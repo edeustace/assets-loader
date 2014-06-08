@@ -9,7 +9,7 @@ class ConcatenatorTest extends Specification {
       val elements = Seq(ContentElement("a.txt", "a", None), ContentElement("b.txt", "b", None))
 
       val namer = new PathNamer {
-        override def name[A](elements: Seq[Element[A]]): String = "concatenated.txt"
+        override def name[A](elements: Seq[Element[A]], hashCode:Int): String = "concatenated.txt"
       }
 
       new Concatenator(namer).run(elements) === Seq(ContentElement("concatenated.txt", "a\nb\n", None))
