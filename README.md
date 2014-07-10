@@ -170,7 +170,19 @@ Css concatenation doesn't account for paths to other resources within css files,
 If you want to see logs from asset loader - make sure you add a logger for 'assets-loader' to your log config.
 
 ### Developing
-Clone the project and run `play`.
+
+    git clone git@github.com:edeustace/assets-loader.git
+    
+#### plugin library
+
+    cd plugin
+    play test # unit tests
+    play it:test # integration tests
+    play clean compile publish-local etc....
+
+#### example app
+
+You need to publish-local in the plugin to update your local repo. Then in the example play app run `play update` to pull in the latest jar. To run the example run `play run`.
 
 
 ### Release Notes
