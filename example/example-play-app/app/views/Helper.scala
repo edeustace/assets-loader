@@ -19,6 +19,12 @@ object Helper{
     }
   }
 
-  val loader = new com.ee.assets.Loader(None, Play.current.mode, Play.current.configuration, info = SimpleAssetsInfo("assets", "public"))
+  val deploy = None
+  val mode = Play.current.mode
+  val config = Play.current.configuration
+
+  val loader = new com.ee.assets.Loader(deployer = deploy, mode = mode, config = config, info = SimpleAssetsInfo("assets", "public"))
+  val loaderExternal = new com.ee.assets.Loader(deployer = deploy, mode = mode, config = config, info = SimpleAssetsInfo("assets", "public", true))
+
   val deployLoader = new com.ee.assets.Loader(Some(deployer), Play.current.mode, Play.current.configuration)
 }

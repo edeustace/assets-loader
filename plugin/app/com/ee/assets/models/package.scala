@@ -59,9 +59,10 @@ package object models {
   trait AssetsInfo{
     def webPath:String
     def filePath:String
+    def isExternalHost:Boolean
   }
 
-  case class SimpleAssetsInfo(webPath: String, filePath: String) extends AssetsInfo
+  case class SimpleAssetsInfo(webPath: String, filePath: String, isExternalHost: Boolean = false) extends AssetsInfo
 
 }
 
