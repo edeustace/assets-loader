@@ -96,6 +96,25 @@ This allows you to for example deploy your assets to Amazon S3, then return the 
 
 You can pass in your own closure compiler options when you are instantiating the Loader instance. If you pass in nothing it'll use the default settings.
 
+### Add external / different host(s)
+
+To be able to distribute your assets through one or more different hosts (like vhost or AWS Cloudfront) put a list of hosts in your config like this:
+
+     assetsLoader: {
+          ... , 
+          hosts: ["http://localhost:9000/", "http://a1.yourhost.com/", "http://cloudfront-abc.com/"]
+     }
+
+To deliver your assets in a rotating order from this hosts, pass another parameter to your **SimpleAssetsInfo** like this:
+
+     val loaderExternal = new com.ee.assets.Loader(deployer = deploy, mode = mode, config = config, info = SimpleAssetsInfo("assets", "public", true))
+
+Then just load your assets from that loader like this:
+
+     @views.Helper.loaderExternal.scripts("example-host-a")( "javascripts/example" )
+     
+See more examples in the example-play-app.     
+
 ## Installing
 
 #### Add the Asset Loader as a dependency to your build:
