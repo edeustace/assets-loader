@@ -30,21 +30,13 @@ class FileToWebPath(info: AssetsInfo) extends Transformer[Unit,Unit]{
       prependNextHost(out)
     }
     else{
+      logger.warn(s"no hosts were found from config ${ExternalHosts.configPath}")
       out
     }
   }
 
   def prependNextHost(out: String) = {
-    s"$getNextHost$out"
-  }
-
-  def getNextHost = {
-    val host = ExternalHosts.hosts(ExternalHosts.hostsIndex)
-    //iterate through the list of hosts
-    if(ExternalHosts.hostsIndex == ExternalHosts.hosts.size-1)  ExternalHosts.hostsIndex = 0
-    else ExternalHosts.hostsIndex += 1
-
-    host
+    s"${ExternalHosts.getNextHost}$out"
   }
 
 }
@@ -54,6 +46,16 @@ trait ExternalHostsComponent {
 }
 
 object ExternalHosts{
+  val configPath = "assetsLoader.hosts"
   var hostsIndex = 0
-  lazy val hosts = Play.configuration.getStringList("assetsLoader.hosts").fold(List[String]())(_.asScala.toList)
+  lazy val hosts = Play.configuration.getStringList(configPath).fold(List[String]())(_.asScala.toList)
+
+  def getNextHost = {
+    val host = ExternalHosts.hosts(ExternalHosts.hostsIndex)
+    //iterate through the list of hosts
+    if(ExternalHosts.hostsIndex == ExternalHosts.hosts.size-1)  ExternalHosts.hostsIndex = 0
+    else ExternalHosts.hostsIndex += 1
+
+    host
+  }
 }
