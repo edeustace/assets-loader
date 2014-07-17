@@ -1,0 +1,11 @@
+
+@main("Welcome to Play 2.0") {
+    <h1>This is an example application for Assets Loader with external (host) assets</h1>
+
+    @views.Helper.loaderExternal.scripts("example-host-a")( "javascripts/example" )
+    @views.Helper.loaderExternal.scripts("example-host-b")( "javascripts/jquery-1.7.1.min.js" )
+    @views.Helper.loaderExternal.scripts("example-host-c")( "javascripts/example" )
+    @views.Helper.loaderExternal.scripts("example-host-d")( "javascripts/jquery-1.7.1.min.js" , "javascripts/example/fileOne.js" )
+
+    @views.Helper.externalDeployLoader.scripts("example-host-e")( "javascripts/example" )
+}

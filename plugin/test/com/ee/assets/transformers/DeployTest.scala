@@ -1,5 +1,6 @@
 package com.ee.assets.transformers
 
+import com.ee.assets.models.{SimpleAssetsInfo, AssetsInfo}
 import org.specs2.mutable.Specification
 import com.ee.assets.deployment.{ContentInfo, Deployer}
 import java.io.InputStream
@@ -9,6 +10,8 @@ class DeployTest extends Specification{
   "string deploy" should {
     "work" in {
 
+      val mockInfo = new SimpleAssetsInfo("web", "file")
+
       val mockDeploy = new Deployer {
         override def deploy(
                              filename: String,
@@ -17,7 +20,7 @@ class DeployTest extends Specification{
                              info: ContentInfo): Either[String, String] = Right(s"deployed/$filename")
       }
 
-      val deploy = StringDeploy(mockDeploy)
+      val deploy = StringDeploy(mockDeploy, mockInfo)
 
       val elements = Seq(
         ContentElement( "1.js", "alert('hello');", None),

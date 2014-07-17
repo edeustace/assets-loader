@@ -5,6 +5,8 @@
 # Home page
 GET     /                           controllers.Application.index
 
+GET     /externalHost               controllers.Application.externalHost
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               com.ee.assets.controllers.Assets.at(path="/public", file)
 
