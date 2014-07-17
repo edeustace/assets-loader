@@ -160,8 +160,8 @@ class Loader(
     val concat = new Concatenator(namer)
     val toWebPath = new FileToWebPath(info)
     val gzip = new Gzip()
-    val stringWriter = if (config.deploy) new StringDeploy(deployer.get).run _ else new Writer(writeToGeneratedFolder).run _ andThen toWebPath.run _
-    val byteWriter = if (config.deploy) new ByteArrayDeploy(deployer.get).run _ else new ByteArrayWriter(pathToFile).run _ andThen toWebPath.run _
+    val stringWriter = if (config.deploy) new StringDeploy(deployer.get, info).run _ else new Writer(writeToGeneratedFolder).run _ andThen toWebPath.run _
+    val byteWriter = if (config.deploy) new ByteArrayDeploy(deployer.get, info).run _ else new ByteArrayWriter(pathToFile).run _ andThen toWebPath.run _
     val builder = new TransformationBuilder(read.run, concat.run, gzip.run, minify.run, stringWriter, byteWriter, toWebPath.run)
     builder.build(config)
   }

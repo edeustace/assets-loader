@@ -2,6 +2,9 @@ package com.ee.assets.deployment
 
 import java.io.InputStream
 
+import com.ee.assets.models.AssetsInfo
+import com.ee.assets.transformers.{ExternalHosts, PathElement}
+
 
 trait Deployer {
 
@@ -13,6 +16,15 @@ trait Deployer {
     */
   def deploy(filename: String,  lastModified: Long, contents: => InputStream, info : ContentInfo): Either[String,String]
 
+  /**
+   * use external location if required
+   * @param pathElement
+   * @param info
+   * @return
+   */
+  def resolve(pathElement: PathElement, info: AssetsInfo) = {
+    PathElement(ExternalHosts.external(pathElement.path))
+  }
 }
 
 case class ContentInfo(contentType:String, contentEncoding:Option[String] = None)

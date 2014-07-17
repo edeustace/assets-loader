@@ -21,9 +21,17 @@ class FileToWebPath(info: AssetsInfo) extends Transformer[Unit,Unit]{
     }
     val out = p.replaceFirst(info.filePath, info.webPath)
 
-    if(info.isExternalHost) external(out)
+    if(info.isExternalHost) ExternalHosts.external(out)
     else if (out.startsWith("/")) out else s"/$out"
   }
+}
+
+object ExternalHosts{
+  lazy val logger = Logger("external-hosts")
+
+  val configPath = "assetsLoader.hosts"
+  var hostsIndex = 0
+  lazy val hosts = Play.configuration.getStringList(configPath).fold(List[String]())(_.asScala.toList)
 
   def external(out: String) = {
     if(ExternalHosts.hosts.size > 0){
@@ -36,21 +44,10 @@ class FileToWebPath(info: AssetsInfo) extends Transformer[Unit,Unit]{
   }
 
   def prependNextHost(out: String) = {
-    s"${ExternalHosts.getNextHost}$out"
+    s"${getNextHost}$out"
   }
 
-}
-
-trait ExternalHostsComponent {
-  val hosts = ExternalHosts
-}
-
-object ExternalHosts{
-  val configPath = "assetsLoader.hosts"
-  var hostsIndex = 0
-  lazy val hosts = Play.configuration.getStringList(configPath).fold(List[String]())(_.asScala.toList)
-
-  def getNextHost = {
+  private def getNextHost = {
     val host = ExternalHosts.hosts(ExternalHosts.hostsIndex)
     //iterate through the list of hosts
     if(ExternalHosts.hostsIndex == ExternalHosts.hosts.size-1)  ExternalHosts.hostsIndex = 0
@@ -58,4 +55,5 @@ object ExternalHosts{
 
     host
   }
+
 }
