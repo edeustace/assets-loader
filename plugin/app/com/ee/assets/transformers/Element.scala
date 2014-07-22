@@ -1,16 +1,30 @@
 package com.ee.assets.transformers
 
-abstract class Element[A](val path: String,
-                              val contents: A,
-                              val lastModified: Option[Long])
+trait Element[A] {
+  def path: String
 
-case class ContentElement[A](override val path: String,
-                      override val contents: A,
-                      override val lastModified: Option[Long])
-  extends Element[A](
-    path,
-    contents,
-    lastModified
-  )
+  def contents: A
 
-case class PathElement(override val path: String) extends Element[Unit](path, Unit, None)
+  def lastModified: Option[Long]
+
+}
+
+abstract class BaseElement[A](val path: String,
+                          val contents: A,
+                          val lastModified: Option[Long]) extends Element[A]
+
+case class ContentElement[A](val path: String,
+                             val contents: A,
+                             val lastModified: Option[Long]) extends Element[A]
+
+case class PathElement(override val path: String) extends BaseElement[Unit](path, Unit, None)
+
+
+trait DeployedElement extends Element[Unit] {
+
+  override def lastModified: Option[Long] = None
+
+  override def contents: Unit = Unit
+}
+
+case class SimpleDeployedElement(val path:String) extends DeployedElement
