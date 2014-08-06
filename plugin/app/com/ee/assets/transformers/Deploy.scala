@@ -1,8 +1,9 @@
 package com.ee.assets.transformers
 
+import java.io.{ByteArrayInputStream, InputStream}
+
 import com.ee.assets.deployment.{ContentInfo, Deployer}
 import com.ee.log.Logger
-import java.io.{InputStream, ByteArrayInputStream}
 
 abstract class BaseDeploy[A](d: Deployer) extends Transformer[A, Unit] {
 
@@ -12,13 +13,13 @@ abstract class BaseDeploy[A](d: Deployer) extends Transformer[A, Unit] {
 
   protected def encoding: Option[String]
 
-  override def run(elements: Seq[Element[A]]): Seq[PathElement] = {
+  override def run(elements: Seq[Element[A]]): Seq[DeployedElement] = {
     elements.map {
       e =>
         def contentType = if (e.path.endsWith(".js")) "text/javascript" else "text/css"
         val is: InputStream = getInputStream(e.contents)
         d.deploy(e.path, e.lastModified.getOrElse(0), is, ContentInfo(contentType, encoding)) match {
-          case Right(p) => Some(PathElement(p))
+          case Right(p) => Some(p)
           case Left(err) => {
             logger.warn(s"Error deploying: ${e.path}")
             None
