@@ -1,6 +1,7 @@
 package com.ee.assets.transformers
 
 import java.io.File
+import org.apache.commons.io.FileUtils
 import org.specs2.mutable.{Specification, Before}
 
 
@@ -34,7 +35,7 @@ trait BaseIntegration extends Specification {
     val f = new File(readPath)
 
     if (f.exists) {
-      Some(ContentElement(path, scala.io.Source.fromFile(f).getLines.mkString("\n"), None))
+      Some(ContentElement(path, FileUtils.readFileToString(f), None))
     } else {
       println(s"file: $f doesn't exist")
       None

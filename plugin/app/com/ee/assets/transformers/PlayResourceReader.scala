@@ -4,6 +4,7 @@ import com.ee.assets.exceptions.AssetsLoaderException
 import com.ee.log.Logger
 import java.io.File
 import java.net.JarURLConnection
+import org.apache.commons.io.IOUtils
 import play.api.Play
 
 class PlayResourceReader extends Transformer[Unit, String] {
@@ -22,7 +23,7 @@ class PlayResourceReader extends Transformer[Unit, String] {
 
         val contents = url.map {
           u =>
-            Source.fromInputStream(u.openStream).getLines.mkString("\n")
+            IOUtils.toString(u.openStream())
         }.orElse {
           val errorMsg = s"can't load path: ${e.path}"
           throw new AssetsLoaderException(errorMsg)
