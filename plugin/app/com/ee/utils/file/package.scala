@@ -4,6 +4,8 @@ import _root_.com.ee.log.Logger
 import java.io.File
 import java.io.FileWriter
 
+import org.apache.commons.io.FileUtils
+
 package object file {
 
   lazy val logger = Logger("file")
@@ -51,10 +53,7 @@ package object file {
 
     logger.debug("file.readContents: " + f.getName)
     if (f.exists) {
-      val source = scala.io.Source.fromFile(f)(io.Codec("UTF-8"))
-      val lines = source.mkString
-      source.close()
-      lines
+      FileUtils.readFileToString(f, "UTF-8")
     }
     else {
       ""
