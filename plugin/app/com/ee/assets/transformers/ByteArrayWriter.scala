@@ -19,7 +19,9 @@ class ByteArrayWriter(fileFn: String => File) extends Transformer[Array[Byte], U
       val fileOut = fileFn(e.path)
       logger.trace(s"from ${e.path} write bytes to ${fileOut.getPath}")
       fileOut.getParentFile.mkdirs()
-      IOUtils.write(e.contents, new FileOutputStream(fileOut))
+      val os = new FileOutputStream(fileOut)
+      IOUtils.write(e.contents, os)
+      os.close()
       PathElement(e.path)
     }
   }
